@@ -6,7 +6,9 @@
   "mixins": [
   ],
   "client": [
-    "ChatAutocompleteMixin"
+    "ChatAutocompleteMixin",
+    "ChatHudAnimationMixin",
+    "ChatScreenAnimationMixin"
   ],
   "injectors": {
     "defaultRequire": 1
