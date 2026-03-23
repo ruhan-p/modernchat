@@ -8,6 +8,7 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -90,11 +91,47 @@ public abstract class ChatAutocompleteMixin extends Screen {
             "<effect>"
     ));
 
-    // Enchantment ID -> name mapping (1.8.9)
+    // Tokens that trigger entity name suggestions
+    @Unique
+    private static final Set<String> ENTITY_NAME_TOKENS = new HashSet<String>(Arrays.asList(
+            "<entityName>"
+    ));
+
+    // Commands that accept all selectors
+    @Unique
+    private static final Set<String> SELECTOR_COMMANDS = new HashSet<String>(Arrays.asList(
+            "/clear", "/effect", "/enchant", "/execute", "/give", "/kill",
+            "/msg", "/particle", "/playsound", "/replaceitem", "/scoreboard",
+            "/spawnpoint", "/spreadplayers", "/stats", "/summon", "/tell",
+            "/tellraw", "/testfor", "/tp", "/teleport", "/trigger", "/w", "/xp"
+    ));
+
+    // Commands that only accept @p and @r
+    @Unique
+    private static final Set<String> LIMITED_SELECTOR_COMMANDS = new HashSet<String>(Arrays.asList(
+            "/kick", "/me"
+    ));
+
+    // Selector display names
+    @Unique
+    private static final String[][] SELECTORS_ALL = {
+            {"@p", "@p (Nearest Player)"},
+            {"@a", "@a (All Players)"},
+            {"@e", "@e (All Entities)"},
+            {"@r", "@r (Random Player)"}
+    };
+
+    @Unique
+    private static final String[][] SELECTORS_LIMITED = {
+            {"@p", "@p (Nearest Player)"},
+            {"@r", "@r (Random Player)"}
+    };
+
+    // Enchantment ID
     @Unique
     private static final Map<Integer, String> ENCHANTMENT_NAMES = new LinkedHashMap<Integer, String>();
 
-    // Potion effect ID -> name mapping (1.8.9)
+    // Potion effect ID
     @Unique
     private static final Map<Integer, String> EFFECT_NAMES = new LinkedHashMap<Integer, String>();
 
@@ -606,6 +643,19 @@ public abstract class ChatAutocompleteMixin extends Screen {
     }
 
     @Unique
+    private List<String> modernchat$getEntityNames() {
+        try {
+            List<String> names = EntityType.getEntityNames();
+            if (names == null) return Collections.emptyList();
+            List<String> sorted = new ArrayList<String>(names);
+            Collections.sort(sorted);
+            return sorted;
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
+    @Unique
     private int[] modernchat$getCrosshairBlockPos() {
         try {
             MinecraftClient client = MinecraftClient.getInstance();
@@ -651,7 +701,6 @@ public abstract class ChatAutocompleteMixin extends Screen {
         }
 
         if (!text.contains(" ")) {
-            // Phase 1: Command name matching
             String prefix = text.toLowerCase();
             for (String cmd : COMMAND_NAMES) {
                 if (cmd.startsWith(prefix) && !cmd.equals(prefix)) {
@@ -660,7 +709,6 @@ public abstract class ChatAutocompleteMixin extends Screen {
                 }
             }
         } else {
-            // Phase 2: Argument matching
             modernchat$computeArgSuggestions(text);
         }
 
@@ -686,14 +734,13 @@ public abstract class ChatAutocompleteMixin extends Screen {
         for (String[] argTokens : syntaxEntries) {
             if (argTokens.length <= argTargetPos) continue;
 
-            // Verify all previously typed args match the syntax entry
             boolean matches = true;
             for (int i = 0; i < argTargetPos; i++) {
                 String inputArg = parts[i + 1];
                 String syntaxToken = argTokens[i];
 
                 if (modernchat$isPlaceholder(syntaxToken)) {
-                    continue; // Placeholders match any user input
+                    continue;
                 }
                 if (!syntaxToken.equalsIgnoreCase(inputArg)) {
                     matches = false;
@@ -705,7 +752,6 @@ public abstract class ChatAutocompleteMixin extends Screen {
             String nextToken = argTokens[argTargetPos];
 
             if (PLAYER_TOKENS.contains(nextToken)) {
-                // Player name suggestions
                 List<String> players = modernchat$getPlayerNames();
                 boolean anyMatch = false;
                 for (String name : players) {
@@ -715,6 +761,23 @@ public abstract class ChatAutocompleteMixin extends Screen {
                             seen, "p:" + name);
                     anyMatch = true;
                 }
+
+                String[][] selectors = null;
+                if (SELECTOR_COMMANDS.contains(command)) {
+                    selectors = SELECTORS_ALL;
+                } else if (LIMITED_SELECTOR_COMMANDS.contains(command)) {
+                    selectors = SELECTORS_LIMITED;
+                }
+                if (selectors != null) {
+                    for (String[] sel : selectors) {
+                        if (!trailingSpace && !sel[0].startsWith(partial)) continue;
+                        modernchat$addSuggestion(sel[1],
+                                modernchat$buildCompletion(parts, argTargetPos, sel[0]),
+                                seen, "s:" + sel[0]);
+                        anyMatch = true;
+                    }
+                }
+
                 if (!anyMatch) {
                     modernchat$addSuggestion(nextToken, null, seen, "h:" + nextToken);
                 }
@@ -738,7 +801,6 @@ public abstract class ChatAutocompleteMixin extends Screen {
                 }
 
             } else if (BLOCK_TOKENS.contains(nextToken)) {
-                // Block name suggestions from registry
                 List<String> blocks = modernchat$getBlockNames();
                 boolean anyMatch = false;
                 for (String name : blocks) {
@@ -753,7 +815,6 @@ public abstract class ChatAutocompleteMixin extends Screen {
                 }
 
             } else if (ENCHANTMENT_TOKENS.contains(nextToken)) {
-                // Enchantment ID suggestions with names
                 boolean anyMatch = false;
                 for (Map.Entry<Integer, String> entry : ENCHANTMENT_NAMES.entrySet()) {
                     String idStr = String.valueOf(entry.getKey());
@@ -770,7 +831,6 @@ public abstract class ChatAutocompleteMixin extends Screen {
                 }
 
             } else if (EFFECT_TOKENS.contains(nextToken)) {
-                // Potion effect ID suggestions with names
                 boolean anyMatch = false;
                 for (Map.Entry<Integer, String> entry : EFFECT_NAMES.entrySet()) {
                     String idStr = String.valueOf(entry.getKey());
@@ -780,6 +840,20 @@ public abstract class ChatAutocompleteMixin extends Screen {
                     modernchat$addSuggestion(display,
                             modernchat$buildCompletion(parts, argTargetPos, idStr),
                             seen, "fx:" + idStr);
+                    anyMatch = true;
+                }
+                if (!anyMatch) {
+                    modernchat$addSuggestion(nextToken, null, seen, "h:" + nextToken);
+                }
+
+            } else if (ENTITY_NAME_TOKENS.contains(nextToken)) {
+                List<String> entities = modernchat$getEntityNames();
+                boolean anyMatch = false;
+                for (String name : entities) {
+                    if (!trailingSpace && !name.toLowerCase().startsWith(partial)) continue;
+                    modernchat$addSuggestion(name,
+                            modernchat$buildCompletion(parts, argTargetPos, name),
+                            seen, "en:" + name);
                     anyMatch = true;
                 }
                 if (!anyMatch) {
@@ -893,8 +967,7 @@ public abstract class ChatAutocompleteMixin extends Screen {
     private void modernchat$onKeyPressed(char chr, int keyCode, CallbackInfo ci) {
         if (this.suggestionDisplays.isEmpty()) return;
 
-        // Tab - commit selected suggestion
-        if (keyCode == 15) {
+        if (keyCode == 15) { // Tab
             int idx = this.selectedIndex >= 0 ? this.selectedIndex : 0;
             if (idx < this.suggestionCompletions.size()) {
                 String completion = this.suggestionCompletions.get(idx);
@@ -912,8 +985,7 @@ public abstract class ChatAutocompleteMixin extends Screen {
             return;
         }
 
-        // Up arrow
-        if (keyCode == 200) {
+        if (keyCode == 200) { // Up
             if (this.selectedIndex > 0) {
                 this.selectedIndex--;
                 this.browsing = true;
@@ -929,8 +1001,7 @@ public abstract class ChatAutocompleteMixin extends Screen {
             return;
         }
 
-        // Down arrow
-        if (keyCode == 208) {
+        if (keyCode == 208) { // Down
             int maxIdx = this.suggestionDisplays.size() - 1;
             if (this.selectedIndex < maxIdx) {
                 this.selectedIndex++;
