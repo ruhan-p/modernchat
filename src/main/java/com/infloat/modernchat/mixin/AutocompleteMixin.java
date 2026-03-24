@@ -5,6 +5,7 @@ import com.infloat.modernchat.CommandSyntaxLoader;
 import com.infloat.modernchat.ModernChatConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -22,8 +23,9 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
 import java.util.*;
+
+// TODO: organize command syntax targets
 
 @Mixin(ChatScreen.class)
 public abstract class AutocompleteMixin extends Screen {
@@ -78,15 +80,65 @@ public abstract class AutocompleteMixin extends Screen {
     @Unique
     private static final List<String> COMMAND_NAMES = new ArrayList<String>();
 
+    // Sentinel value — can never be a real server address, so first call always loads.
     @Unique
-    private static volatile boolean modernchat$syntaxLoaded = false;
+    private static volatile String modernchat$lastKnownServer = "##UNINITIALIZED##";
+
+    @Unique
+    private static String modernchat$getCurrentServerHost() {
+        try {
+            ServerInfo entry = MinecraftClient.getInstance().getCurrentServerEntry();
+            if (entry == null) return null;
+            String addr = entry.address;
+            if (addr == null || addr.isEmpty()) return null;
+            // Strip port, handling IPv6 brackets
+            int colon = addr.lastIndexOf(':');
+            int bracket = addr.lastIndexOf(']');
+            if (colon > bracket) addr = addr.substring(0, colon);
+            return addr.toLowerCase(java.util.Locale.ROOT).trim();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Unique
+    private static void modernchat$clearSyntax() {
+        COMMAND_SYNTAX.clear();
+        COMMAND_COLORS.clear();
+        COMMAND_NAMES.clear();
+        COORD_COMMANDS            = Collections.emptySet();
+        SELECTOR_COMMANDS         = Collections.emptySet();
+        LIMITED_SELECTOR_COMMANDS = Collections.emptySet();
+        PLAYER_TOKENS             = Collections.emptySet();
+        BLOCK_TOKENS              = Collections.emptySet();
+        ENCHANTMENT_TOKENS        = Collections.emptySet();
+        EFFECT_TOKENS             = Collections.emptySet();
+        ENTITY_NAME_TOKENS        = Collections.emptySet();
+        ITEM_TOKENS               = Collections.emptySet();
+        ENCHANTMENT_NAMES         = Collections.emptyMap();
+        EFFECT_NAMES              = Collections.emptyMap();
+    }
 
     @Unique
     private static void modernchat$ensureSyntaxLoaded() {
-        if (modernchat$syntaxLoaded) return;
+        String currentServer = modernchat$getCurrentServerHost();
+        // Fast path: same server as last load, nothing to do.
+        String sentinel = "##UNINITIALIZED##";
+        String last = modernchat$lastKnownServer;
+        if (!sentinel.equals(last)
+                && (currentServer == null ? last == null : currentServer.equals(last))) {
+            return;
+        }
         synchronized (COMMAND_SYNTAX) {
-            if (modernchat$syntaxLoaded) return;
-            List<CommandSyntaxDef> defs = CommandSyntaxLoader.loadAll();
+            // Re-check inside lock in case another thread just finished loading.
+            currentServer = modernchat$getCurrentServerHost();
+            last = modernchat$lastKnownServer;
+            if (!sentinel.equals(last)
+                    && (currentServer == null ? last == null : currentServer.equals(last))) {
+                return;
+            }
+            modernchat$clearSyntax();
+            List<CommandSyntaxDef> defs = CommandSyntaxLoader.loadForServer(currentServer);
             for (CommandSyntaxDef def : defs) {
                 int color = def.getColorInt();
                 for (Map.Entry<String, List<String>> entry : def.commands.entrySet()) {
@@ -98,7 +150,6 @@ public abstract class AutocompleteMixin extends Screen {
             COMMAND_NAMES.addAll(COMMAND_SYNTAX.keySet());
             Collections.sort(COMMAND_NAMES);
 
-            // Aggregate token-type sets and ID maps from JSON data
             CommandSyntaxLoader.AggregatedData agg = CommandSyntaxLoader.aggregate(defs);
             COORD_COMMANDS            = agg.coordCommands;
             SELECTOR_COMMANDS         = agg.selectorCommands;
@@ -112,7 +163,7 @@ public abstract class AutocompleteMixin extends Screen {
             ENCHANTMENT_NAMES         = agg.enchantmentNames;
             EFFECT_NAMES              = agg.effectNames;
 
-            modernchat$syntaxLoaded = true;
+            modernchat$lastKnownServer = currentServer;
         }
     }
 

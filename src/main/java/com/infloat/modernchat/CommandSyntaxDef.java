@@ -27,6 +27,19 @@ public class CommandSyntaxDef {
 
     public String name = "unnamed";
 
+    /**
+     * Server IP suffix for server-specific defs (e.g. "hypixel.net").
+     * Null or absent means this def is always active (no server restriction).
+     */
+    public String ip = null;
+
+    /**
+     * When true, always-on defs (those without an ip field, e.g. vanilla) are
+     * excluded when this server-specific def is matched. Allows a server's
+     * command set to fully replace vanilla suggestions.
+     */
+    public boolean disableVanilla = false;
+
     /** ARGB hex string, e.g. "0xFFAAAAAA". Parsed by {@link #getColorInt()}. */
     public String color = "0xFFAAAAAA";
 

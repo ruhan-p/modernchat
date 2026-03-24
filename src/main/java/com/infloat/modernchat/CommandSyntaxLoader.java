@@ -21,7 +21,8 @@ public class CommandSyntaxLoader {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final File SYNTAX_DIR = new File("config/modernchat/syntaxes");
-    private static final String BUNDLED_VANILLA = "/assets/modernchat/syntaxes/vanilla.json";
+    private static final String BUNDLED_VANILLA  = "/assets/modernchat/syntaxes/vanilla.json";
+    private static final String BUNDLED_HYPIXEL  = "/assets/modernchat/syntaxes/hypixel.json";
 
     /**
      * Ensures the config directory exists and the bundled defaults are present,
@@ -112,6 +113,67 @@ public class CommandSyntaxLoader {
 
     // -------------------------------------------------------------------------
 
+    /**
+     * Loads syntax definitions filtered for the given server host.
+     *
+     * <ul>
+     *   <li>Defs with no {@code ip} field are always-on (e.g. vanilla).</li>
+     *   <li>Defs with an {@code ip} field are only included when {@code serverHost}
+     *       matches via suffix: {@code mc.hypixel.net} matches {@code hypixel.net},
+     *       but {@code fakehypixel.net} does not.</li>
+     *   <li>If any matched server-specific def has {@code disableVanilla = true},
+     *       all always-on defs are excluded from the result.</li>
+     * </ul>
+     *
+     * @param serverHost Normalized server hostname (port stripped, lowercased),
+     *                   or {@code null} for singleplayer / no active server.
+     */
+    public static List<CommandSyntaxDef> loadForServer(String serverHost) {
+        List<CommandSyntaxDef> all = loadAll();
+
+        List<CommandSyntaxDef> alwaysOn   = new ArrayList<CommandSyntaxDef>();
+        List<CommandSyntaxDef> serverDefs = new ArrayList<CommandSyntaxDef>();
+
+        for (CommandSyntaxDef def : all) {
+            if (def.ip == null || def.ip.isEmpty()) {
+                alwaysOn.add(def);
+            } else if (serverHost != null && ipMatches(normalizeHost(def.ip), serverHost)) {
+                serverDefs.add(def);
+            }
+        }
+
+        boolean disableVanilla = false;
+        for (CommandSyntaxDef def : serverDefs) {
+            if (def.disableVanilla) { disableVanilla = true; break; }
+        }
+
+        List<CommandSyntaxDef> result = new ArrayList<CommandSyntaxDef>();
+        if (!disableVanilla) result.addAll(alwaysOn);
+        result.addAll(serverDefs);
+        return result;
+    }
+
+    /**
+     * Returns true if {@code address} equals {@code ip} or is a subdomain of it.
+     * E.g. {@code ipMatches("hypixel.net", "mc.hypixel.net")} → true,
+     *      {@code ipMatches("hypixel.net", "fakehypixel.net")} → false.
+     */
+    public static boolean ipMatches(String ip, String address) {
+        if (ip == null || address == null) return false;
+        return address.equals(ip) || address.endsWith("." + ip);
+    }
+
+    /** Strips port from an address and lowercases it. Handles IPv6 brackets. */
+    private static String normalizeHost(String address) {
+        if (address == null) return null;
+        int colon = address.lastIndexOf(':');
+        int bracket = address.lastIndexOf(']');
+        if (colon > bracket) address = address.substring(0, colon);
+        return address.toLowerCase(java.util.Locale.ROOT).trim();
+    }
+
+    // -------------------------------------------------------------------------
+
     private static CommandSyntaxDef loadFile(File file) {
         try {
             Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
@@ -128,10 +190,11 @@ public class CommandSyntaxLoader {
 
     private static void ensureDefaultsExist() {
         SYNTAX_DIR.mkdirs();
-        File vanillaFile = new File(SYNTAX_DIR, "vanilla.json");
-        if (!vanillaFile.exists()) {
-            copyBundledResource(BUNDLED_VANILLA, vanillaFile);
-        }
+        // Always overwrite bundled syntaxes so they stay in sync with the mod.
+        // Users who want to customise behaviour should create a separate file
+        // (e.g. custom.json) in the same directory.
+        copyBundledResource(BUNDLED_VANILLA, new File(SYNTAX_DIR, "vanilla.json"));
+        copyBundledResource(BUNDLED_HYPIXEL, new File(SYNTAX_DIR, "hypixel.json"));
     }
 
     private static void copyBundledResource(String resourcePath, File dest) {
