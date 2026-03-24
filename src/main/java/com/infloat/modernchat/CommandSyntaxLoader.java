@@ -21,6 +21,10 @@ import java.util.*;
 
 public class CommandSyntaxLoader {
 
+    /** Set to true whenever a save method writes to disk so the autocomplete
+     *  mixin can detect the change and reload on the next suggestion compute. */
+    public static volatile boolean syntaxDirty = false;
+
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final File SYNTAX_DIR = new File("config/modernchat/servers");
     private static final String BUNDLED_SINGLEPLAYER  = "/assets/modernchat/servers/singleplayer.json";
@@ -239,6 +243,7 @@ public class CommandSyntaxLoader {
             } finally {
                 writer.close();
             }
+            syntaxDirty = true;
             return true;
         } catch (Exception e) {
             System.err.println("[ModernChat] Failed to save color to '" + file.getName() + "': " + e.getMessage());
@@ -272,6 +277,7 @@ public class CommandSyntaxLoader {
             } finally {
                 writer.close();
             }
+            syntaxDirty = true;
             return true;
         } catch (Exception e) {
             System.err.println("[ModernChat] Failed to save friends to '" + file.getName() + "': " + e.getMessage());

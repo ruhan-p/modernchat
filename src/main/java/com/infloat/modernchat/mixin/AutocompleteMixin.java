@@ -130,6 +130,11 @@ public abstract class AutocompleteMixin extends Screen {
 
     @Unique
     private static void modernchat$ensureSyntaxLoaded() {
+        // If a save was made via the config screens, force a reload.
+        if (CommandSyntaxLoader.syntaxDirty) {
+            CommandSyntaxLoader.syntaxDirty = false;
+            modernchat$lastKnownServer = "##UNINITIALIZED##";
+        }
         String currentServer = modernchat$getCurrentServerHost();
         // Fast path: same server as last load, nothing to do.
         String sentinel = "##UNINITIALIZED##";
