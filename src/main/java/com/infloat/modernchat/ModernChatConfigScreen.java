@@ -77,6 +77,11 @@ public class ModernChatConfigScreen extends Screen {
 		options.add(new OptionEntry(id++, "Replace Angle Brackets", "Replace angle brackets with a colon (:)",
 				centerX + 5, startY, true));
 
+		// Preserve Chat Input
+		startY += ROW_HEIGHT;
+		options.add(new OptionEntry(id++, "Preserve Chat Input", "Restore typed text when reopening the chat",
+				centerX + 5, startY, true));
+
 		// Add toggle buttons
 		for (OptionEntry entry : options) {
 			if (entry.button != null) {
@@ -195,6 +200,7 @@ public class ModernChatConfigScreen extends Screen {
 		if ("Compact Chat Spam".equals(label)) return config.compactChatSpam;
 		if ("Maintain Chat History".equals(label)) return config.maintainChatHistory;
 		if ("Replace Angle Brackets".equals(label)) return config.replaceAngleBrackets;
+		if ("Preserve Chat Input".equals(label)) return config.preserveChatInput;
 		return false;
 	}
 
@@ -205,6 +211,7 @@ public class ModernChatConfigScreen extends Screen {
 		else if ("Compact Chat Spam".equals(label)) config.compactChatSpam = value;
 		else if ("Maintain Chat History".equals(label)) config.maintainChatHistory = value;
 		else if ("Replace Angle Brackets".equals(label)) config.replaceAngleBrackets = value;
+		else if ("Preserve Chat Input".equals(label)) config.preserveChatInput = value;
 	}
 
 	private String getToggleText(boolean value) {

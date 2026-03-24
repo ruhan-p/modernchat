@@ -18,6 +18,7 @@ public class ModernChatConfig {
 	public boolean compactChatSpam = true;
 	public boolean maintainChatHistory = true;
 	public boolean replaceAngleBrackets = false;
+	public boolean preserveChatInput = true;
 
 	public void load() {
 		if (!CONFIG_FILE.exists()) {
@@ -37,6 +38,7 @@ public class ModernChatConfig {
 					this.compactChatSpam = loaded.compactChatSpam;
 					this.maintainChatHistory = loaded.maintainChatHistory;
 					this.replaceAngleBrackets = loaded.replaceAngleBrackets;
+				this.preserveChatInput = loaded.preserveChatInput;
 				}
 			} finally {
 				reader.close();

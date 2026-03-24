@@ -14,7 +14,8 @@
     "ChatUpMixin",
     "DontClearChatHistoryMixin",
     "CompactChatSpamMixin",
-    "RemoveAngleBracketsMixin"
+    "RemoveAngleBracketsMixin",
+    "LetMeSpeakMixin"
   ],
   "injectors": {
     "defaultRequire": 1
