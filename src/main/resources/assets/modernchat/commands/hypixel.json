@@ -3,7 +3,6 @@
   "color": "0xFFD4A843",
   "ip": "hypixel.net",
   "disableSingleplayer": true,
-  "friends": [],
   "rankColors": {
     "/fly":        "0xFF55FF55",
     "/zoo":        "0xFF55FF55",
@@ -183,9 +182,6 @@
     ],
     "/f": [
       "<player>",
-      "<player> <player>",
-      "<player> <player> <player>",
-      "<player> <player> <player> <player>",
       "add <player>",
       "accept <player>",
       "best <player>",
@@ -199,7 +195,7 @@
       "requests"
     ],
     "/party": [
-      "<player>",
+      "<player> <player> <player> <player> <player> <player> <player> <player>",
       "<player> <player>",
       "<player> <player> <player>",
       "<player> <player> <player> <player>",
@@ -224,7 +220,7 @@
       "private"
     ],
     "/p": [
-      "<player>",
+      "<player> <player> <player> <player> <player> <player> <player> <player>",
       "accept <player>",
       "challenge <player>",
       "disband",

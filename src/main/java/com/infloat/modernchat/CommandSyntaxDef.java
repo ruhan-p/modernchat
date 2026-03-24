@@ -5,7 +5,7 @@ import java.util.Map;
 
 /**
  * Represents one command-syntax group loaded from a JSON file in
- * config/modernchat/servers/.
+ * config/modernchat/commands/.
  *
  * JSON structure:
  *

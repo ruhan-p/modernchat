@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * Loads command-syntax definition files from config/modernchat/servers/.
+ * Loads command-syntax definition files from config/modernchat/commands/.
  *
  * On the first call to loadAll() if the directory is empty (or does not
  * yet contain singleplayer.json the bundled default is copied from the mod's
@@ -26,9 +26,16 @@ public class CommandSyntaxLoader {
     public static volatile boolean syntaxDirty = false;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final File SYNTAX_DIR = new File("config/modernchat/servers");
-    private static final String BUNDLED_SINGLEPLAYER  = "/assets/modernchat/servers/singleplayer.json";
-    private static final String BUNDLED_HYPIXEL  = "/assets/modernchat/servers/hypixel.json";
+    private static final File SYNTAX_DIR  = new File("config/modernchat/commands");
+    private static final File FRIENDS_DIR = new File("config/modernchat/friends");
+    private static final String BUNDLED_SINGLEPLAYER         = "/assets/modernchat/commands/singleplayer.json";
+    private static final String BUNDLED_HYPIXEL              = "/assets/modernchat/commands/hypixel.json";
+    private static final String BUNDLED_FRIENDS_SINGLEPLAYER = "/assets/modernchat/friends/singleplayer.json";
+    private static final String BUNDLED_FRIENDS_HYPIXEL      = "/assets/modernchat/friends/hypixel.json";
+
+    private static class FriendsDef {
+        List<String> friends;
+    }
 
     public static List<CommandSyntaxDef> loadAll() {
         ensureDefaultsExist();
@@ -47,6 +54,7 @@ public class CommandSyntaxLoader {
         for (File file : files) {
             CommandSyntaxDef def = loadFile(file);
             if (def != null && def.commands != null) {
+                def.friends = loadFriendsFile(file);
                 defs.add(def);
             }
         }
@@ -215,6 +223,7 @@ public class CommandSyntaxLoader {
             CommandSyntaxDef def = loadFile(file);
             if (def != null) {
                 def.sourceFile = file;
+                def.friends = loadFriendsFile(file);
                 result.add(def);
             }
         }
@@ -252,26 +261,31 @@ public class CommandSyntaxLoader {
     }
 
     /**
-     * Overwrites only the friends array inside the given server JSON file,
-     * preserving all other fields.  Returns true on success.
+     * Writes the friends list for a server to the corresponding file in
+     * config/modernchat/friends/, derived from the command file's name.
+     * Creates the file if it does not yet exist.  Returns true on success.
      */
-    public static boolean saveFriends(File file, List<String> friends) {
-        if (file == null || !file.exists()) return false;
+    public static boolean saveFriends(File commandFile, List<String> friends) {
+        if (commandFile == null) return false;
+        FRIENDS_DIR.mkdirs();
+        File friendsFile = new File(FRIENDS_DIR, commandFile.getName());
         try {
-            JsonObject obj;
-            Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
-            try {
-                obj = GSON.fromJson(reader, JsonObject.class);
-            } finally {
-                reader.close();
+            JsonObject obj = new JsonObject();
+            if (friendsFile.exists()) {
+                Reader reader = new InputStreamReader(new FileInputStream(friendsFile), StandardCharsets.UTF_8);
+                try {
+                    JsonObject existing = GSON.fromJson(reader, JsonObject.class);
+                    if (existing != null) obj = existing;
+                } finally {
+                    reader.close();
+                }
             }
-            if (obj == null) return false;
             com.google.gson.JsonArray arr = new com.google.gson.JsonArray();
             if (friends != null) {
                 for (String name : friends) arr.add(new com.google.gson.JsonPrimitive(name));
             }
             obj.add("friends", arr);
-            Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+            Writer writer = new OutputStreamWriter(new FileOutputStream(friendsFile), StandardCharsets.UTF_8);
             try {
                 GSON.toJson(obj, writer);
             } finally {
@@ -280,8 +294,29 @@ public class CommandSyntaxLoader {
             syntaxDirty = true;
             return true;
         } catch (Exception e) {
-            System.err.println("[ModernChat] Failed to save friends to '" + file.getName() + "': " + e.getMessage());
+            System.err.println("[ModernChat] Failed to save friends to '" + friendsFile.getName() + "': " + e.getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Loads the friends list for a command file from its corresponding file in
+     * config/modernchat/friends/.  Returns null if no friends file exists.
+     */
+    private static List<String> loadFriendsFile(File commandFile) {
+        File friendsFile = new File(FRIENDS_DIR, commandFile.getName());
+        if (!friendsFile.exists()) return null;
+        try {
+            Reader reader = new InputStreamReader(new FileInputStream(friendsFile), StandardCharsets.UTF_8);
+            try {
+                FriendsDef fd = GSON.fromJson(reader, FriendsDef.class);
+                return fd != null ? fd.friends : null;
+            } finally {
+                reader.close();
+            }
+        } catch (Exception e) {
+            System.err.println("[ModernChat] Failed to load friends file '" + friendsFile.getName() + "': " + e.getMessage());
+            return null;
         }
     }
 
@@ -301,11 +336,15 @@ public class CommandSyntaxLoader {
 
     private static void ensureDefaultsExist() {
         SYNTAX_DIR.mkdirs();
+        FRIENDS_DIR.mkdirs();
         // Always overwrite bundled syntaxes so they stay in sync with the mod.
         // Users who want to customize behavior should create a separate file
         // (e.g. custom.json) in the same directory.
         copyBundledResource(BUNDLED_SINGLEPLAYER, new File(SYNTAX_DIR, "singleplayer.json"));
         copyBundledResource(BUNDLED_HYPIXEL, new File(SYNTAX_DIR, "hypixel.json"));
+        // Friends files are user-editable, so only create if absent.
+        copyBundledResource(BUNDLED_FRIENDS_SINGLEPLAYER, new File(FRIENDS_DIR, "singleplayer.json"));
+        copyBundledResource(BUNDLED_FRIENDS_HYPIXEL, new File(FRIENDS_DIR, "hypixel.json"));
     }
 
     private static void copyBundledResource(String resourcePath, File dest) {

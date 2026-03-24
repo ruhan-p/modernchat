@@ -1,7 +1,6 @@
 {
   "name": "singleplayer",
   "color": "0xFFAAAAAA",
-  "friends": [],
 
   "coordCommands": [
     "/blockdata", "/clone", "/fill", "/replaceitem", "/setblock",

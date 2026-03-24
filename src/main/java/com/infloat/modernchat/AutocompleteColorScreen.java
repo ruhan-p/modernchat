@@ -10,12 +10,10 @@ import java.util.List;
 
 /**
  * Config screen that lets the user customize the autocomplete suggestion color
- * for every server syntax file (singleplayer is excluded because it is used as a
- * read-only baseline).
+ * for every server syntax file.
  *
- * The list is fully scrollable so any number of server files is supported.
  * Click a row to select it, then type a hex color in the text field and press
- * Save (or Enter).  Changes are written directly to the syntax JSON file.</p>
+ * Save (or Enter).  Changes are written directly to the syntax JSON file.
  *
  */
 

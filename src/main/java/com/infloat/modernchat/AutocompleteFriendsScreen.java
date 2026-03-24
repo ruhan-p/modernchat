@@ -12,13 +12,8 @@ import java.util.List;
  * Config screen that lets the user manage the friends list for each server.
  * Friends are persisted in the server's JSON file and are offered as player-name
  * autocomplete suggestions even when those players are not visible in the tablist.
- *
- * Layout: two side-by-side panels separated by a vertical divider.
- *   Left  — scrollable server list (click to select).
- *   Right — scrollable friends list for the selected server, with an add field
- *           pinned to the bottom of the panel.
- * Each panel has its own scrollbar; the mouse wheel scrolls whichever panel the
- * cursor is currently over.
+ * Left list shows servers, right shows friends. To add a friend, select the server
+ * and enter the name. You can also copy friend lists from other servers.
  */
 public class AutocompleteFriendsScreen extends Screen {
 
@@ -29,37 +24,40 @@ public class AutocompleteFriendsScreen extends Screen {
     private int serverScrollOffset = 0;
     private int friendScrollOffset = 0;
 
-    /** Updated every render() so handleMouse() knows which panel to scroll. */
     private int lastMouseX = 0;
+    private int lastMouseY = 0;
 
-    // ── Layout constants ────────────────────────────────────────────────────
-    private static final int LIST_TOP     = 30;  // y of both panel headers
-    private static final int HEADER_H     = 14;  // height of the header row
-    private static final int ROW_HEIGHT   = 24;  // server rows (name + count)
-    private static final int FRIEND_ROW_H = 16;  // friend rows
+    private static final int LIST_TOP     = 30;
+    private static final int HEADER_H     = 14;
+    private static final int ROW_HEIGHT   = 24;
+    private static final int FRIEND_ROW_H = 16;
     private static final int SCROLLBAR_W  = 4;
 
-    // ── Computed in init() ──────────────────────────────────────────────────
-    private int splitX;          // x of the vertical divider
-    private int listBottom;      // y where both panels end
+    private int splitX;
+    private int listBottom;
 
-    // Left panel
-    private int leftX;           // = 4
-    private int leftRight;       // = splitX - 3
-    private int leftContentRight;// leftRight - SCROLLBAR_W - 2  (excludes scrollbar)
+    private int leftX;
+    private int leftRight;
+    private int leftContentRight;
     private int maxServerVisible;
 
-    // Right panel
-    private int rightX;          // = splitX + 3
-    private int rightRight;      // = this.width - 4
-    private int rightContentRight;// rightRight - SCROLLBAR_W - 2  (excludes scrollbar)
-    private int friendsListTop;  // y where friend rows start
-    private int addRowY;         // y of the add-friend field / button
+    private int rightX;
+    private int rightRight;
+    private int rightContentRight;
+    private int friendsListTop;
+    private int addRowY;
+    private int copyBtnY;
     private int maxFriendVisible;
 
     private TextFieldWidget addFriendField;
     private static final int ID_ADD  = 1;
     private static final int ID_DONE = 2;
+    private static final int ID_COPY = 3;
+
+    // 0 = normal, 1 = dropdown open, 2 = confirmation overlay showing
+    private int copyState = 0;
+    private int pendingCopySourceIndex  = -1;
+    private int copyDropdownScrollOffset = 0;
 
     public AutocompleteFriendsScreen(Screen parent) {
         this.parent = parent;
@@ -71,6 +69,9 @@ public class AutocompleteFriendsScreen extends Screen {
         selectedIndex      = -1;
         serverScrollOffset = 0;
         friendScrollOffset = 0;
+        copyState          = 0;
+        pendingCopySourceIndex   = -1;
+        copyDropdownScrollOffset = 0;
 
         entries = CommandSyntaxLoader.loadAllDefs();
 
@@ -86,12 +87,12 @@ public class AutocompleteFriendsScreen extends Screen {
         rightContentRight  = rightRight - SCROLLBAR_W - 2;
 
         friendsListTop   = LIST_TOP + HEADER_H;
-        addRowY          = listBottom - 26;
+        copyBtnY = listBottom - 26;
+        addRowY  = listBottom - 50;
 
         maxServerVisible = Math.max(1, (listBottom - friendsListTop) / ROW_HEIGHT);
         maxFriendVisible = Math.max(1, (addRowY - friendsListTop) / FRIEND_ROW_H);
 
-        // Add-friend field: fills right content width minus button gap + button
         int addFieldW = rightContentRight - rightX - 4 - 36;
         addFriendField = new TextFieldWidget(
                 0, this.textRenderer,
@@ -101,22 +102,32 @@ public class AutocompleteFriendsScreen extends Screen {
         this.buttons.add(new ButtonWidget(ID_ADD,
                 rightX + addFieldW + 4, addRowY - 1, 36, 20, "Add"));
 
+        int copyBtnW = rightContentRight - rightX;
+        this.buttons.add(new ButtonWidget(ID_COPY,
+                rightX, copyBtnY, copyBtnW, 20, "Copy from..."));
+
         this.buttons.add(new ButtonWidget(ID_DONE,
                 this.width / 2 - 75, this.height - 26, 150, 20, "Done"));
     }
-
-    // ── Tick ────────────────────────────────────────────────────────────────
 
     @Override
     public void tick() {
         addFriendField.tick();
     }
 
-    // ── Render ──────────────────────────────────────────────────────────────
-
     @Override
     public void render(int mouseX, int mouseY, float delta) {
         lastMouseX = mouseX;
+        lastMouseY = mouseY;
+
+        boolean hasSelection = (selectedIndex >= 0 && selectedIndex < entries.size());
+        for (Object obj : this.buttons) {
+            ButtonWidget btn = (ButtonWidget) obj;
+            if (btn.id == ID_ADD || btn.id == ID_COPY) {
+                btn.active = hasSelection;
+            }
+        }
+        addFriendField.setEditable(hasSelection);
 
         this.renderBackground();
         this.drawCenteredString(this.textRenderer,
@@ -125,14 +136,18 @@ public class AutocompleteFriendsScreen extends Screen {
         renderServerPanel(mouseX, mouseY);
         renderFriendsPanel(mouseX, mouseY);
 
-        // Vertical divider between the two panels
         this.fill(splitX - 1, LIST_TOP - 2, splitX + 1, listBottom, 0x55FFFFFF);
 
-        // Horizontal separator above Done button
         this.fill(4, listBottom, this.width - 4, listBottom + 1, 0x55FFFFFF);
 
         addFriendField.render();
         super.render(mouseX, mouseY, delta);
+
+        if (copyState == 1) {
+            renderCopyDropdown(mouseX, mouseY);
+        } else if (copyState == 2) {
+            renderCopyConfirm(mouseX, mouseY);
+        }
     }
 
     private void renderServerPanel(int mouseX, int mouseY) {
@@ -174,7 +189,6 @@ public class AutocompleteFriendsScreen extends Screen {
                     leftX + 4, rowY + 13, 0x777777);
         }
 
-        // Scrollbar
         if (entries.size() > maxServerVisible) {
             int sbX      = leftRight - SCROLLBAR_W;
             int sbTop    = friendsListTop;
@@ -229,7 +243,6 @@ public class AutocompleteFriendsScreen extends Screen {
             this.drawWithShadow(this.textRenderer, removeText, removeX, rowY + 3, 0xFF4444);
         }
 
-        // Scrollbar for friends list
         if (friends.size() > maxFriendVisible) {
             int sbX      = rightRight - SCROLLBAR_W;
             int sbTop    = friendsListTop;
@@ -242,7 +255,102 @@ public class AutocompleteFriendsScreen extends Screen {
         }
     }
 
-    // ── Input ───────────────────────────────────────────────────────────────
+    private void renderCopyDropdown(int mouseX, int mouseY) {
+        List<Integer> copyable = buildCopyableList();
+
+        int panelX      = rightX;
+        int panelRight  = rightContentRight;
+        int panelTop    = LIST_TOP;
+        int panelBottom = addRowY - 4;
+
+        this.fill(panelX - 1, panelTop - 1, panelRight + 1, panelBottom + 1, 0xFF555555);
+        this.fill(panelX, panelTop, panelRight, panelBottom, 0xF0111111);
+
+        this.drawWithShadow(this.textRenderer,
+                "Copy friends from:", panelX + 4, panelTop + 3, 0xAAAAAA);
+        int listTop = panelTop + HEADER_H + 2;
+        this.fill(panelX, listTop - 1, panelRight, listTop, 0x44FFFFFF);
+
+        int maxVisible   = Math.max(1, (panelBottom - listTop) / FRIEND_ROW_H);
+        int visibleCount = Math.min(maxVisible, copyable.size() - copyDropdownScrollOffset);
+
+        if (copyable.isEmpty()) {
+            this.drawWithShadow(this.textRenderer,
+                    "No other servers.", panelX + 4, listTop + 3, 0x666666);
+        }
+
+        for (int i = 0; i < visibleCount; i++) {
+            int entryIdx = copyable.get(copyDropdownScrollOffset + i);
+            CommandSyntaxDef def = entries.get(entryIdx);
+            int rowY = listTop + i * FRIEND_ROW_H;
+
+            boolean isHovered = mouseX >= panelX && mouseX <= panelRight
+                    && mouseY >= rowY && mouseY < rowY + FRIEND_ROW_H;
+            if (isHovered) {
+                this.fill(panelX, rowY, panelRight, rowY + FRIEND_ROW_H, 0x44FFFFFF);
+            }
+
+            String name = (def.name != null && !def.name.isEmpty())
+                    ? Character.toUpperCase(def.name.charAt(0)) + def.name.substring(1)
+                    : "Unknown";
+            int friendCount = (def.friends != null) ? def.friends.size() : 0;
+            String label = name + " (" + friendCount + " friend" + (friendCount == 1 ? "" : "s") + ")";
+            label = this.textRenderer.trimToWidth(label, panelRight - panelX - 8);
+            this.drawWithShadow(this.textRenderer, label,
+                    panelX + 4, rowY + 3, isHovered ? 0xFFFF55 : 0xFFFFFF);
+        }
+
+        if (copyable.size() > maxVisible) {
+            int sbX    = panelRight - SCROLLBAR_W;
+            int sbH    = panelBottom - listTop;
+            int thumbH = Math.max(8, sbH * maxVisible / copyable.size());
+            int maxOff = copyable.size() - maxVisible;
+            int thumbY = listTop + (sbH - thumbH) * copyDropdownScrollOffset / Math.max(1, maxOff);
+            this.fill(sbX, listTop, sbX + SCROLLBAR_W, panelBottom, 0x33FFFFFF);
+            this.fill(sbX, thumbY, sbX + SCROLLBAR_W, thumbY + thumbH, 0xFFAAAAAA);
+        }
+    }
+
+    private void renderCopyConfirm(int mouseX, int mouseY) {
+        if (pendingCopySourceIndex < 0 || pendingCopySourceIndex >= entries.size()) return;
+
+        CommandSyntaxDef src = entries.get(pendingCopySourceIndex);
+        String srcName = (src.name != null && !src.name.isEmpty())
+                ? Character.toUpperCase(src.name.charAt(0)) + src.name.substring(1)
+                : "Unknown";
+
+        int boxW = 180;
+        int boxH = 64;
+        int boxX = (this.width - boxW) / 2;
+        int boxY = (this.height - boxH) / 2;
+
+        this.fill(boxX - 1, boxY - 1, boxX + boxW + 1, boxY + boxH + 1, 0xFF555555);
+        this.fill(boxX, boxY, boxX + boxW, boxY + boxH, 0xFF1A1A1A);
+
+        this.drawCenteredString(this.textRenderer,
+                "Copy friends from", this.width / 2, boxY + 8, 0xFFFFFF);
+        this.drawCenteredString(this.textRenderer,
+                srcName + "?", this.width / 2, boxY + 20, 0xFFFF55);
+
+        int btnY  = boxY + boxH - 22;
+        int yesX  = boxX + 16;
+        int noX   = boxX + boxW - 66;
+        int btnW  = 50;
+        int btnH  = 14;
+
+        boolean yesHover = mouseX >= yesX && mouseX < yesX + btnW
+                && mouseY >= btnY && mouseY < btnY + btnH;
+        boolean noHover  = mouseX >= noX  && mouseX < noX  + btnW
+                && mouseY >= btnY && mouseY < btnY + btnH;
+
+        this.fill(yesX, btnY, yesX + btnW, btnY + btnH,
+                yesHover ? 0xFF228822 : 0xFF114411);
+        this.fill(noX, btnY, noX + btnW, btnY + btnH,
+                noHover ? 0xFF882222 : 0xFF441111);
+
+        this.drawCenteredString(this.textRenderer, "Yes",    yesX + btnW / 2, btnY + 3, 0xFFFFFF);
+        this.drawCenteredString(this.textRenderer, "Cancel", noX  + btnW / 2, btnY + 3, 0xFFFFFF);
+    }
 
     @Override
     protected void buttonClicked(ButtonWidget button) {
@@ -250,14 +358,81 @@ public class AutocompleteFriendsScreen extends Screen {
             this.client.setScreen(parent);
         } else if (button.id == ID_ADD) {
             addFriend();
+        } else if (button.id == ID_COPY) {
+            copyState = 1;
+            copyDropdownScrollOffset = 0;
+            pendingCopySourceIndex   = -1;
         }
     }
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int button) {
+        if (copyState == 1) {
+            List<Integer> copyable = buildCopyableList();
+
+            int panelX      = rightX;
+            int panelRight  = rightContentRight;
+            int panelTop    = LIST_TOP;
+            int panelBottom = addRowY - 4;
+            int listTop     = panelTop + HEADER_H + 2;
+            int maxVisible  = Math.max(1, (panelBottom - listTop) / FRIEND_ROW_H);
+            int visibleCount = Math.min(maxVisible, copyable.size() - copyDropdownScrollOffset);
+
+            boolean inPanel = mouseX >= panelX && mouseX <= panelRight
+                    && mouseY >= panelTop && mouseY < panelBottom;
+
+            if (inPanel) {
+                for (int i = 0; i < visibleCount; i++) {
+                    int rowY = listTop + i * FRIEND_ROW_H;
+                    if (mouseY >= rowY && mouseY < rowY + FRIEND_ROW_H) {
+                        pendingCopySourceIndex = copyable.get(copyDropdownScrollOffset + i);
+                        copyState = 2;
+                        return;
+                    }
+                }
+            } else {
+                copyState = 0;
+            }
+            return;
+        }
+
+        if (copyState == 2) {
+            int boxW = 180;
+            int boxH = 64;
+            int boxX = (this.width - boxW) / 2;
+            int boxY = (this.height - boxH) / 2;
+            int btnY = boxY + boxH - 22;
+            int yesX = boxX + 16;
+            int noX  = boxX + boxW - 66;
+            int btnW = 50;
+            int btnH = 14;
+
+            if (mouseX >= yesX && mouseX < yesX + btnW
+                    && mouseY >= btnY && mouseY < btnY + btnH) {
+                copyFriendsFrom(pendingCopySourceIndex);
+                copyState = 0;
+                pendingCopySourceIndex = -1;
+                return;
+            }
+
+            if (mouseX >= noX && mouseX < noX + btnW
+                    && mouseY >= btnY && mouseY < btnY + btnH) {
+                copyState = 0;
+                pendingCopySourceIndex = -1;
+                return;
+            }
+
+            boolean inBox = mouseX >= boxX && mouseX <= boxX + boxW
+                    && mouseY >= boxY && mouseY <= boxY + boxH;
+            if (!inBox) {
+                copyState = 0;
+                pendingCopySourceIndex = -1;
+            }
+            return;
+        }
+
         addFriendField.mouseClicked(mouseX, mouseY, button);
 
-        // Left panel: server selection
         if (mouseX >= leftX && mouseX <= leftContentRight
                 && mouseY >= friendsListTop && mouseY < listBottom) {
             int clickedRow = (mouseY - friendsListTop) / ROW_HEIGHT;
@@ -271,7 +446,6 @@ public class AutocompleteFriendsScreen extends Screen {
             }
         }
 
-        // Right panel: remove-friend click
         if (selectedIndex >= 0 && selectedIndex < entries.size()) {
             CommandSyntaxDef def = entries.get(selectedIndex);
             List<String> friends = (def.friends != null) ? def.friends : new ArrayList<String>();
@@ -307,8 +481,21 @@ public class AutocompleteFriendsScreen extends Screen {
         int wheel = Mouse.getEventDWheel();
         if (wheel == 0) return;
 
+        if (copyState == 1) {
+            List<Integer> copyable = buildCopyableList();
+            int listTop    = LIST_TOP + HEADER_H + 2;
+            int panelBottom = addRowY - 4;
+            int maxVisible = Math.max(1, (panelBottom - listTop) / FRIEND_ROW_H);
+            if (wheel > 0) {
+                copyDropdownScrollOffset = Math.max(0, copyDropdownScrollOffset - 1);
+            } else {
+                int maxOff = Math.max(0, copyable.size() - maxVisible);
+                copyDropdownScrollOffset = Math.min(maxOff, copyDropdownScrollOffset + 1);
+            }
+            return;
+        }
+
         if (lastMouseX < splitX) {
-            // Scroll server list
             if (wheel > 0) {
                 serverScrollOffset = Math.max(0, serverScrollOffset - 1);
             } else {
@@ -316,7 +503,6 @@ public class AutocompleteFriendsScreen extends Screen {
                 serverScrollOffset = Math.min(maxOff, serverScrollOffset + 1);
             }
         } else {
-            // Scroll friend list
             if (selectedIndex < 0 || selectedIndex >= entries.size()) return;
             CommandSyntaxDef def = entries.get(selectedIndex);
             List<String> friends = (def.friends != null) ? def.friends : new ArrayList<String>();
@@ -331,6 +517,14 @@ public class AutocompleteFriendsScreen extends Screen {
 
     @Override
     protected void keyPressed(char chr, int keyCode) {
+        if (keyCode == 1) { // Escape
+            if (copyState != 0) {
+                copyState = 0;
+                pendingCopySourceIndex = -1;
+                return;
+            }
+        }
+
         if (addFriendField.isFocused()) {
             if (keyCode == 28) { // Enter
                 addFriend();
@@ -344,8 +538,6 @@ public class AutocompleteFriendsScreen extends Screen {
         }
         super.keyPressed(chr, keyCode);
     }
-
-    // ── Helpers ─────────────────────────────────────────────────────────────
 
     private void addFriend() {
         if (selectedIndex < 0 || selectedIndex >= entries.size()) return;
@@ -362,5 +554,34 @@ public class AutocompleteFriendsScreen extends Screen {
         def.friends.add(name);
         CommandSyntaxLoader.saveFriends(def.sourceFile, def.friends);
         addFriendField.setText("");
+    }
+
+    private List<Integer> buildCopyableList() {
+        List<Integer> list = new ArrayList<Integer>();
+        for (int i = 0; i < entries.size(); i++) {
+            if (i != selectedIndex) list.add(i);
+        }
+        return list;
+    }
+
+    private void copyFriendsFrom(int sourceIndex) {
+        if (selectedIndex < 0 || selectedIndex >= entries.size()) return;
+        if (sourceIndex  < 0 || sourceIndex  >= entries.size()) return;
+
+        CommandSyntaxDef dest = entries.get(selectedIndex);
+        CommandSyntaxDef src  = entries.get(sourceIndex);
+
+        if (src.friends == null || src.friends.isEmpty()) return;
+        if (dest.friends == null) dest.friends = new ArrayList<String>();
+
+        for (String friend : src.friends) {
+            boolean exists = false;
+            for (String existing : dest.friends) {
+                if (existing.equalsIgnoreCase(friend)) { exists = true; break; }
+            }
+            if (!exists) dest.friends.add(friend);
+        }
+
+        CommandSyntaxLoader.saveFriends(dest.sourceFile, dest.friends);
     }
 }

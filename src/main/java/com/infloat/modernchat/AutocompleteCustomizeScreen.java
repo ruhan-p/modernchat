@@ -5,7 +5,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 
 /**
  * Intermediate screen shown when the user clicks "Customize..." in the main
- * config screen.  Offers two sub-screens: Colors and Friends.
+ * config screen. Currently has two options: Colors and Friends.
  */
 public class AutocompleteCustomizeScreen extends Screen {
 
