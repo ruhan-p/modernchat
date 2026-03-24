@@ -8,7 +8,8 @@
   "client": [
     "ChatAutocompleteMixin",
     "ChatHudAnimationMixin",
-    "ChatScreenAnimationMixin"
+    "ChatScreenAnimationMixin",
+    "ChatHistoryMixin"
   ],
   "injectors": {
     "defaultRequire": 1
