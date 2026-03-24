@@ -7,9 +7,11 @@
   ],
   "client": [
     "ChatAutocompleteMixin",
+    "ChatHistoryMixin",
     "ChatHudAnimationMixin",
     "ChatScreenAnimationMixin",
-    "ChatHistoryMixin"
+    "ChatUpMixin",
+    "DontClearChatHistoryMixin"
   ],
   "injectors": {
     "defaultRequire": 1

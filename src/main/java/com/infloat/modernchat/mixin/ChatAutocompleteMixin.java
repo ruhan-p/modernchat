@@ -920,7 +920,6 @@ public abstract class ChatAutocompleteMixin extends Screen {
         int boxWidth = maxWidth + 10;
         int boxHeight = visibleCount * ENTRY_HEIGHT;
 
-        // Align box with the start of the current word being typed
         int lastSpace = text.lastIndexOf(' ');
         String textBeforeCurrentWord = lastSpace >= 0 ? text.substring(0, lastSpace + 1) : "";
         int boxX = 4 + tr.getStringWidth(textBeforeCurrentWord);
@@ -929,7 +928,6 @@ public abstract class ChatAutocompleteMixin extends Screen {
         // Background
         fill(boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xCC000000);
 
-        // Draw scroll indicators if needed
         if (this.scrollOffset > 0) {
             tr.drawWithShadow("\u25B2", boxX + boxWidth - 10, boxY + 1, 0xFF888888);
         }
@@ -946,7 +944,6 @@ public abstract class ChatAutocompleteMixin extends Screen {
             String completion = this.suggestionCompletions.get(idx);
             boolean isHint = completion == null;
 
-            // Only highlight completable suggestions, never hints
             if (idx == this.selectedIndex && !isHint) {
                 fill(boxX, entryY, boxX + boxWidth, entryY + ENTRY_HEIGHT, 0x882A2A40);
             }
@@ -972,7 +969,7 @@ public abstract class ChatAutocompleteMixin extends Screen {
             if (idx < this.suggestionCompletions.size()) {
                 String completion = this.suggestionCompletions.get(idx);
                 if (completion != null) {
-                    this.chatField.setText(completion + " ");
+                    this.chatField.setText(completion);
                     this.suggestionDisplays.clear();
                     this.suggestionCompletions.clear();
                     this.selectedIndex = -1;
