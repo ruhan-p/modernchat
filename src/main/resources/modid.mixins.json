@@ -11,7 +11,8 @@
     "ChatHudAnimationMixin",
     "ChatScreenAnimationMixin",
     "ChatUpMixin",
-    "DontClearChatHistoryMixin"
+    "DontClearChatHistoryMixin",
+    "CompactChatSpamMixin"
   ],
   "injectors": {
     "defaultRequire": 1
