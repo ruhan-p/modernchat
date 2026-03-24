@@ -9,6 +9,7 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
+import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -95,6 +96,12 @@ public abstract class ChatAutocompleteMixin extends Screen {
     @Unique
     private static final Set<String> ENTITY_NAME_TOKENS = new HashSet<String>(Arrays.asList(
             "<entityName>"
+    ));
+
+    // Tokens that trigger item registry suggestions
+    @Unique
+    private static final Set<String> ITEM_TOKENS = new HashSet<String>(Arrays.asList(
+            "<item>"
     ));
 
     // Commands that accept all selectors
@@ -643,6 +650,23 @@ public abstract class ChatAutocompleteMixin extends Screen {
     }
 
     @Unique
+    private List<String> modernchat$getItemNames() {
+        try {
+            List<String> names = new ArrayList<String>();
+            for (Object obj : Item.REGISTRY) {
+                Identifier id = Item.REGISTRY.getIdentifier((Item) obj);
+                if (id != null) {
+                    names.add(id.toString());
+                }
+            }
+            Collections.sort(names);
+            return names;
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
+    @Unique
     private List<String> modernchat$getEntityNames() {
         try {
             List<String> names = EntityType.getEntityNames();
@@ -855,6 +879,33 @@ public abstract class ChatAutocompleteMixin extends Screen {
                             modernchat$buildCompletion(parts, argTargetPos, name),
                             seen, "en:" + name);
                     anyMatch = true;
+                }
+                if (!anyMatch) {
+                    modernchat$addSuggestion(nextToken, null, seen, "h:" + nextToken);
+                }
+
+            } else if (ITEM_TOKENS.contains(nextToken)) {
+                List<String> items = modernchat$getItemNames();
+                boolean anyMatch = false;
+                for (String name : items) {
+                    String lowerName = name.toLowerCase();
+                    boolean fullMatches = trailingSpace || lowerName.startsWith(partial);
+                    // Also offer the bare name without the "minecraft:" namespace prefix
+                    String shortName = lowerName.startsWith("minecraft:") ? lowerName.substring(10) : null;
+                    boolean shortMatches = shortName != null && (trailingSpace || shortName.startsWith(partial));
+                    if (fullMatches) {
+                        modernchat$addSuggestion(name,
+                                modernchat$buildCompletion(parts, argTargetPos, name),
+                                seen, "it:" + name);
+                        anyMatch = true;
+                    }
+                    if (shortMatches) {
+                        String shortDisplay = name.substring(10);
+                        modernchat$addSuggestion(shortDisplay,
+                                modernchat$buildCompletion(parts, argTargetPos, shortDisplay),
+                                seen, "its:" + shortDisplay);
+                        anyMatch = true;
+                    }
                 }
                 if (!anyMatch) {
                     modernchat$addSuggestion(nextToken, null, seen, "h:" + nextToken);
