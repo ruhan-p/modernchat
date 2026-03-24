@@ -1,6 +1,7 @@
 {
   "name": "singleplayer",
   "color": "0xFFAAAAAA",
+  "friends": [],
 
   "coordCommands": [
     "/blockdata", "/clone", "/fill", "/replaceitem", "/setblock",
@@ -15,13 +16,6 @@
   ],
 
   "limitedSelectorCommands": ["/kick", "/me"],
-
-  "playerTokens":     ["<player>", "<address|player>", "<player|entity>", "<target>", "<source>", "<entity>", "<selector>"],
-  "blockTokens":      ["<tileName>", "<replaceTileName>", "<block>"],
-  "enchantmentTokens":["<enchantmentId>"],
-  "effectTokens":     ["<effect>"],
-  "entityNameTokens": ["<entityName>"],
-  "itemTokens":       ["<item>"],
 
   "enchantmentNames": {
     "0":  "Protection",

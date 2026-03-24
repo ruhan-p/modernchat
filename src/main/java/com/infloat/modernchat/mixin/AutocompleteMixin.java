@@ -125,6 +125,7 @@ public abstract class AutocompleteMixin extends Screen {
         ENCHANTMENT_NAMES         = Collections.emptyMap();
         EFFECT_NAMES              = Collections.emptyMap();
         RANK_COLORS.clear();
+        FRIENDS                   = Collections.emptyList();
     }
 
     @Unique
@@ -171,6 +172,7 @@ public abstract class AutocompleteMixin extends Screen {
             ENCHANTMENT_NAMES         = agg.enchantmentNames;
             EFFECT_NAMES              = agg.effectNames;
             RANK_COLORS.putAll(agg.rankColors);
+            FRIENDS = new ArrayList<String>(agg.friends);
 
             modernchat$lastKnownServer = currentServer;
         }
@@ -218,6 +220,9 @@ public abstract class AutocompleteMixin extends Screen {
 
     @Unique
     private static Set<String> LIMITED_SELECTOR_COMMANDS = Collections.emptySet();
+
+    @Unique
+    private static List<String> FRIENDS = Collections.emptyList();
 
     // Selector display names
     @Unique
@@ -449,6 +454,15 @@ public abstract class AutocompleteMixin extends Screen {
                     modernchat$addSuggestion(name,
                             modernchat$buildCompletion(parts, argTargetPos, name),
                             seen, "p:" + name, commandColor);
+                    anyMatch = true;
+                }
+
+                // Also suggest friends even if not in the tablist
+                for (String friend : FRIENDS) {
+                    if (!trailingSpace && !friend.toLowerCase().startsWith(partial)) continue;
+                    modernchat$addSuggestion(friend,
+                            modernchat$buildCompletion(parts, argTargetPos, friend),
+                            seen, "p:" + friend, commandColor);
                     anyMatch = true;
                 }
 

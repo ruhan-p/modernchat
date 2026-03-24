@@ -83,13 +83,13 @@ public class AutocompleteColorScreen extends Screen {
 
         colorField = new TextFieldWidget(
                 0, this.textRenderer,
-                this.width / 2 - 65, editControlY,
+                this.width / 2 - 92, editControlY,
                 130, 20);
         colorField.setMaxLength(12);
 
         this.buttons.add(new ButtonWidget(
                 ID_SAVE,
-                this.width / 2 + 70, editControlY,
+                this.width / 2 + 43, editControlY,
                 50, 20,
                 "Save"));
 
@@ -193,7 +193,7 @@ public class AutocompleteColorScreen extends Screen {
         if (selectedIndex >= 0 && selectedIndex < entries.size()) {
             String name  = entries.get(selectedIndex).displayName();
             String label = "Color for: " + name;
-            int labelX = this.width / 2 - 65 - this.textRenderer.getStringWidth(label) - 6;
+            int labelX = this.width / 2 - 92 - this.textRenderer.getStringWidth(label) - 6;
             if (labelX < 4) labelX = 4;
             this.drawWithShadow(this.textRenderer, label, labelX, editControlY + 5, 0xFFFFFF);
         }

@@ -3,8 +3,7 @@
   "color": "0xFFD4A843",
   "ip": "hypixel.net",
   "disableSingleplayer": true,
-  "playerTokens": ["<player>"],
-
+  "friends": [],
   "rankColors": {
     "/fly":        "0xFF55FF55",
     "/zoo":        "0xFF55FF55",

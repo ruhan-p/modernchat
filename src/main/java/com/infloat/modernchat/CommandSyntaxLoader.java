@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * Loads command-syntax definition files from config/modernchat/syntaxes/.
+ * Loads command-syntax definition files from config/modernchat/servers/.
  *
  * On the first call to loadAll() if the directory is empty (or does not
  * yet contain singleplayer.json the bundled default is copied from the mod's
@@ -22,9 +22,9 @@ import java.util.*;
 public class CommandSyntaxLoader {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final File SYNTAX_DIR = new File("config/modernchat/syntaxes");
-    private static final String BUNDLED_SINGLEPLAYER  = "/assets/modernchat/syntaxes/singleplayer.json";
-    private static final String BUNDLED_HYPIXEL  = "/assets/modernchat/syntaxes/hypixel.json";
+    private static final File SYNTAX_DIR = new File("config/modernchat/servers");
+    private static final String BUNDLED_SINGLEPLAYER  = "/assets/modernchat/servers/singleplayer.json";
+    private static final String BUNDLED_HYPIXEL  = "/assets/modernchat/servers/hypixel.json";
 
     public static List<CommandSyntaxDef> loadAll() {
         ensureDefaultsExist();
@@ -67,7 +67,16 @@ public class CommandSyntaxLoader {
         public final Map<Integer, String> enchantmentNames = new LinkedHashMap<Integer, String>();
         public final Map<Integer, String> effectNames      = new LinkedHashMap<Integer, String>();
         public final Map<String, Integer> rankColors       = new LinkedHashMap<String, Integer>();
+        public final List<String> friends                  = new ArrayList<String>();
     }
+
+    // Token strings that are universal across all server definitions.
+    private static final String[] DEFAULT_PLAYER_TOKENS      = {"<player>", "<address|player>", "<player|entity>", "<target>", "<source>", "<entity>", "<selector>"};
+    private static final String[] DEFAULT_BLOCK_TOKENS       = {"<tileName>", "<replaceTileName>", "<block>"};
+    private static final String[] DEFAULT_ENCHANTMENT_TOKENS = {"<enchantmentId>", "<enchantment>"};
+    private static final String[] DEFAULT_EFFECT_TOKENS      = {"<effect>"};
+    private static final String[] DEFAULT_ENTITY_NAME_TOKENS = {"<entityName>", "<entity>"};
+    private static final String[] DEFAULT_ITEM_TOKENS        = {"<item>"};
 
     /**
      * Merges all contributions from each CommandSyntaxDef into a single
@@ -76,6 +85,12 @@ public class CommandSyntaxLoader {
      */
     public static AggregatedData aggregate(List<CommandSyntaxDef> defs) {
         AggregatedData agg = new AggregatedData();
+        java.util.Collections.addAll(agg.playerTokens,      DEFAULT_PLAYER_TOKENS);
+        java.util.Collections.addAll(agg.blockTokens,       DEFAULT_BLOCK_TOKENS);
+        java.util.Collections.addAll(agg.enchantmentTokens, DEFAULT_ENCHANTMENT_TOKENS);
+        java.util.Collections.addAll(agg.effectTokens,      DEFAULT_EFFECT_TOKENS);
+        java.util.Collections.addAll(agg.entityNameTokens,  DEFAULT_ENTITY_NAME_TOKENS);
+        java.util.Collections.addAll(agg.itemTokens,        DEFAULT_ITEM_TOKENS);
         for (CommandSyntaxDef def : defs) {
             if (def.coordCommands           != null) agg.coordCommands.addAll(def.coordCommands);
             if (def.selectorCommands        != null) agg.selectorCommands.addAll(def.selectorCommands);
@@ -114,6 +129,13 @@ public class CommandSyntaxLoader {
                         agg.rankColors.put(e.getKey(), (int) Long.parseLong(c, 16));
                     } catch (NumberFormatException ex) {
                         System.err.println("[ModernChat] Invalid rank color '" + e.getValue() + "' for '" + e.getKey() + "' in " + def.name);
+                    }
+                }
+            }
+            if (def.friends != null) {
+                for (String f : def.friends) {
+                    if (f != null && !f.isEmpty() && !agg.friends.contains(f)) {
+                        agg.friends.add(f);
                     }
                 }
             }
@@ -220,6 +242,39 @@ public class CommandSyntaxLoader {
             return true;
         } catch (Exception e) {
             System.err.println("[ModernChat] Failed to save color to '" + file.getName() + "': " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Overwrites only the friends array inside the given server JSON file,
+     * preserving all other fields.  Returns true on success.
+     */
+    public static boolean saveFriends(File file, List<String> friends) {
+        if (file == null || !file.exists()) return false;
+        try {
+            JsonObject obj;
+            Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+            try {
+                obj = GSON.fromJson(reader, JsonObject.class);
+            } finally {
+                reader.close();
+            }
+            if (obj == null) return false;
+            com.google.gson.JsonArray arr = new com.google.gson.JsonArray();
+            if (friends != null) {
+                for (String name : friends) arr.add(new com.google.gson.JsonPrimitive(name));
+            }
+            obj.add("friends", arr);
+            Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+            try {
+                GSON.toJson(obj, writer);
+            } finally {
+                writer.close();
+            }
+            return true;
+        } catch (Exception e) {
+            System.err.println("[ModernChat] Failed to save friends to '" + file.getName() + "': " + e.getMessage());
             return false;
         }
     }

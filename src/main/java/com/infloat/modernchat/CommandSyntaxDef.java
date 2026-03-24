@@ -5,7 +5,7 @@ import java.util.Map;
 
 /**
  * Represents one command-syntax group loaded from a JSON file in
- * config/modernchat/syntaxes/.
+ * config/modernchat/servers/.
  *
  * JSON structure:
  *
@@ -43,6 +43,8 @@ public class CommandSyntaxDef {
     public List<String> effectTokens;
     public List<String> entityNameTokens;
     public List<String> itemTokens;
+
+    public List<String> friends;
 
     public Map<String, String> rankColors;
 

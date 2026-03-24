@@ -108,7 +108,7 @@ public class ModernChatConfigScreen extends Screen {
 		if (button.id == 101) {
 			applyHistoryField();
 			config.save();
-			this.client.setScreen(new AutocompleteColorScreen(this));
+			this.client.setScreen(new AutocompleteCustomizeScreen(this));
 			return;
 		}
 
