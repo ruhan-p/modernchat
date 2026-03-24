@@ -17,6 +17,9 @@
   "entrypoints": {
     "main": [
       "com.infloat.modernchat.ExampleMod"
+    ],
+    "client": [
+      "com.infloat.modernchat.ModernChatClient"
     ]
   },
   "mixins": [

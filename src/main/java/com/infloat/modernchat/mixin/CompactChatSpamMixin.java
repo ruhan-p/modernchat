@@ -1,5 +1,6 @@
 package com.infloat.modernchat.mixin;
 
+import com.infloat.modernchat.ModernChatConfig;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
 import net.minecraft.text.LiteralText;
@@ -30,6 +31,7 @@ public class CompactChatSpamMixin {
 
     @Inject(method = "addMessage(Lnet/minecraft/text/Text;)V", at = @At("HEAD"), cancellable = true)
     private void modernchat$onAddMessage(Text message, CallbackInfo ci) {
+        if (!ModernChatConfig.INSTANCE.compactChatSpam) return;
         if (modernchat$addingCompacted) {
             return;
         }

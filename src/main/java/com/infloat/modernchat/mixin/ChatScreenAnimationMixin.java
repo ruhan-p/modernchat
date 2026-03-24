@@ -1,5 +1,6 @@
 package com.infloat.modernchat.mixin;
 
+import com.infloat.modernchat.ModernChatConfig;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatScreen;
@@ -42,6 +43,7 @@ public class ChatScreenAnimationMixin {
 
     @Inject(method = "render", at = @At("HEAD"))
     private void modernchat$onRenderHead(int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        if (!ModernChatConfig.INSTANCE.smoothAnimations) return;
         modernchat$displacement = modernchat$calculateDisplacement();
         if (modernchat$displacement > 0.01f) {
             GlStateManager.pushMatrix();

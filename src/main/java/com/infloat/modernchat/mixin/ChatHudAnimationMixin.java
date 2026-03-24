@@ -1,5 +1,6 @@
 package com.infloat.modernchat.mixin;
 
+import com.infloat.modernchat.ModernChatConfig;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.text.Text;
@@ -37,6 +38,7 @@ public class ChatHudAnimationMixin {
 
     @Inject(method = "render", at = @At("HEAD"))
     private void modernchat$onRenderHead(int ticks, CallbackInfo ci) {
+        if (!ModernChatConfig.INSTANCE.smoothAnimations) return;
         float displacement = modernchat$calculateDisplacement();
         if (displacement > 0.01f) {
             GlStateManager.pushMatrix();

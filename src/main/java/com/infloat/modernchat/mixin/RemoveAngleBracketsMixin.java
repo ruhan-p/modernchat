@@ -1,5 +1,6 @@
 package com.infloat.modernchat.mixin;
 
+import com.infloat.modernchat.ModernChatConfig;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -15,6 +16,7 @@ public class RemoveAngleBracketsMixin {
 
     @ModifyVariable(method = "addMessage(Lnet/minecraft/text/Text;)V", at = @At("HEAD"), argsOnly = true)
     private Text modernchat$removeAngleBrackets(Text message) {
+        if (!ModernChatConfig.INSTANCE.replaceAngleBrackets) return message;
         if (!(message instanceof TranslatableText)) {
             return message;
         }

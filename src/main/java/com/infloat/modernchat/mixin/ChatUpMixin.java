@@ -1,5 +1,6 @@
 package com.infloat.modernchat.mixin;
 
+import com.infloat.modernchat.ModernChatConfig;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ChatHud;
@@ -21,6 +22,7 @@ public class ChatUpMixin {
 
     @Unique
     private int modernchat$getOffset() {
+        if (!ModernChatConfig.INSTANCE.raiseChat) return 0;
         PlayerEntity player = client.player;
         if (player == null || player.abilities.creativeMode || player.abilities.invulnerable) return 0;
         int offset = player.getArmorProtectionValue() > 0 ? 30 : 20;

@@ -1,5 +1,6 @@
 package com.infloat.modernchat.mixin;
 
+import com.infloat.modernchat.ModernChatConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.ChatScreen;
@@ -929,6 +930,7 @@ public abstract class ChatAutocompleteMixin extends Screen {
 
     @Inject(method = "render", at = @At("TAIL"))
     private void modernchat$renderAutocomplete(int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        if (!ModernChatConfig.INSTANCE.autocomplete) return;
         String text = this.chatField.getText();
 
         if (this.browsing) {
@@ -1013,6 +1015,7 @@ public abstract class ChatAutocompleteMixin extends Screen {
 
     @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
     private void modernchat$onKeyPressed(char chr, int keyCode, CallbackInfo ci) {
+        if (!ModernChatConfig.INSTANCE.autocomplete) return;
         if (this.suggestionDisplays.isEmpty()) return;
 
         if (keyCode == 15) { // Tab
