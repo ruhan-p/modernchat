@@ -12,7 +12,8 @@
     "ChatScreenAnimationMixin",
     "ChatUpMixin",
     "DontClearChatHistoryMixin",
-    "CompactChatSpamMixin"
+    "CompactChatSpamMixin",
+    "RemoveAngleBracketsMixin"
   ],
   "injectors": {
     "defaultRequire": 1
