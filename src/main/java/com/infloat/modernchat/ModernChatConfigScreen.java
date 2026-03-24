@@ -15,6 +15,10 @@ public class ModernChatConfigScreen extends Screen {
 	private static final int BUTTON_WIDTH = 150;
 	private static final int BUTTON_HEIGHT = 20;
 	private static final int ROW_HEIGHT = 24;
+	// Autocomplete row is split: toggle + customize button side-by-side
+	private static final int AUTOCOMPLETE_TOGGLE_W = 80;
+	private static final int CUSTOMIZE_BTN_W       = 66;
+	private static final int AUTOCOMPLETE_ROW_GAP  = 4;
 
 	private TextFieldWidget historyField;
 	private int historyFieldY;
@@ -34,11 +38,12 @@ public class ModernChatConfigScreen extends Screen {
 
 		int id = 0;
 
-		// 1. Autocomplete
+		// Autocomplete – toggle button (narrower) + "Customize..." button side-by-side
 		options.add(new OptionEntry(id++, "Autocomplete", "Toggle Command Autocomplete",
-				centerX + 5, startY, true));
+				centerX + 5, startY, AUTOCOMPLETE_TOGGLE_W));
+		int autocompleteY = startY; // saved for the Customize button below
 
-		// 2. Chat History (text field)
+		// Chat History
 		startY += ROW_HEIGHT;
 		historyFieldY = startY;
 		historyField = new TextFieldWidget(id++, this.textRenderer, centerX + 5, startY, BUTTON_WIDTH, BUTTON_HEIGHT);
@@ -47,27 +52,27 @@ public class ModernChatConfigScreen extends Screen {
 		options.add(new OptionEntry("Chat History", "Change the number of messages saved in chat",
 				centerX + 5, startY));
 
-		// 3. Smooth Chat Animations
+		// Smooth Chat Animations
 		startY += ROW_HEIGHT;
 		options.add(new OptionEntry(id++, "Smooth Chat Animations", "Toggle the chat animations",
 				centerX + 5, startY, true));
 
-		// 4. Raise Chat
+		// Raise Chat
 		startY += ROW_HEIGHT;
 		options.add(new OptionEntry(id++, "Raise Chat", "Vary the chat height to avoid covering health/armor bars",
 				centerX + 5, startY, true));
 
-		// 5. Compact Chat Spam
+		// Compact Chat Spam
 		startY += ROW_HEIGHT;
 		options.add(new OptionEntry(id++, "Compact Chat Spam", "Replace chat spam with a counter",
 				centerX + 5, startY, true));
 
-		// 6. Maintain Chat History
+		// Maintain Chat History
 		startY += ROW_HEIGHT;
 		options.add(new OptionEntry(id++, "Maintain Chat History", "Preserve chat history",
 				centerX + 5, startY, true));
 
-		// 7. Replace Angle Brackets
+		// Replace Angle Brackets
 		startY += ROW_HEIGHT;
 		options.add(new OptionEntry(id++, "Replace Angle Brackets", "Replace angle brackets with a colon (:)",
 				centerX + 5, startY, true));
@@ -78,6 +83,13 @@ public class ModernChatConfigScreen extends Screen {
 				this.buttons.add(entry.button);
 			}
 		}
+
+		// "Customize..." button – shares the Autocomplete row, placed to the right of the toggle
+		this.buttons.add(new ButtonWidget(101,
+				centerX + 5 + AUTOCOMPLETE_TOGGLE_W + AUTOCOMPLETE_ROW_GAP,
+				autocompleteY,
+				CUSTOMIZE_BTN_W, BUTTON_HEIGHT,
+				"Customize..."));
 
 		// Done button
 		startY += ROW_HEIGHT + 10;
@@ -90,6 +102,13 @@ public class ModernChatConfigScreen extends Screen {
 			applyHistoryField();
 			config.save();
 			this.client.setScreen(parent);
+			return;
+		}
+
+		if (button.id == 101) {
+			applyHistoryField();
+			config.save();
+			this.client.setScreen(new AutocompleteColorScreen(this));
 			return;
 		}
 
@@ -136,16 +155,13 @@ public class ModernChatConfigScreen extends Screen {
 	@Override
 	protected void keyPressed(char chr, int keyCode) {
 		if (historyField.isFocused()) {
-			// Only allow digits
 			if (chr >= '0' && chr <= '9' || keyCode == 14 || keyCode == 203 || keyCode == 205 || keyCode == 211) {
 				historyField.keyPressed(chr, keyCode);
 			}
-			// Enter key applies the value
 			if (keyCode == 28) {
 				applyHistoryField();
 				historyField.setFocused(false);
 			}
-			// Escape unfocuses
 			if (keyCode == 1) {
 				historyField.setFocused(false);
 			}
@@ -210,6 +226,17 @@ public class ModernChatConfigScreen extends Screen {
 			this.y = y;
 			this.isToggle = true;
 			this.button = new ButtonWidget(id, x, y, BUTTON_WIDTH, BUTTON_HEIGHT,
+					getToggleText(getConfigValue(label)));
+		}
+
+		/** Toggle button with a custom width (for split-row layouts). */
+		OptionEntry(int id, String label, String description, int x, int y, int buttonWidth) {
+			this.label = label;
+			this.description = description;
+			this.x = x;
+			this.y = y;
+			this.isToggle = true;
+			this.button = new ButtonWidget(id, x, y, buttonWidth, BUTTON_HEIGHT,
 					getToggleText(getConfigValue(label)));
 		}
 

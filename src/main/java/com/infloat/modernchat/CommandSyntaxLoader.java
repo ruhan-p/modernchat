@@ -2,21 +2,23 @@ package com.infloat.modernchat;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * Loads command-syntax definition files from {@code config/modernchat/syntaxes/}.
+ * Loads command-syntax definition files from config/modernchat/syntaxes/.
  *
- * On the first call to {@link #loadAll()}, if the directory is empty (or does not
- * yet contain {@code vanilla.json}), the bundled default is copied from the mod's
+ * On the first call to loadAll() if the directory is empty (or does not
+ * yet contain vanilla.json the bundled default is copied from the mod's
  * classpath resources so users have a starting point they can freely edit.
  *
- * Each {@code *.json} file in that directory is parsed into a {@link CommandSyntaxDef}.
+ * Each json file in that directory is parsed into a CommandSyntaxDef.
  * Files are loaded in alphabetical order so the loading order is deterministic.
  */
+
 public class CommandSyntaxLoader {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -24,10 +26,6 @@ public class CommandSyntaxLoader {
     private static final String BUNDLED_VANILLA  = "/assets/modernchat/syntaxes/vanilla.json";
     private static final String BUNDLED_HYPIXEL  = "/assets/modernchat/syntaxes/hypixel.json";
 
-    /**
-     * Ensures the config directory exists and the bundled defaults are present,
-     * then reads and returns all syntax definitions.
-     */
     public static List<CommandSyntaxDef> loadAll() {
         ensureDefaultsExist();
 
@@ -51,11 +49,9 @@ public class CommandSyntaxLoader {
         return defs;
     }
 
-    // -------------------------------------------------------------------------
-
     /**
      * Aggregated sets and maps built by merging contributions from all loaded
-     * {@link CommandSyntaxDef} files.  Used by AutocompleteMixin to replace its
+     * CommandSyntaxDef files.  Used by AutocompleteMixin to replace its
      * hardcoded static sets and ID-to-name maps.
      */
     public static class AggregatedData {
@@ -74,8 +70,8 @@ public class CommandSyntaxLoader {
     }
 
     /**
-     * Merges all contributions from each {@link CommandSyntaxDef} into a single
-     * {@link AggregatedData} object.  Null fields in a def simply contribute nothing.
+     * Merges all contributions from each CommandSyntaxDef into a single
+     * AggregatedData object.  Null fields in a def simply contribute nothing.
      * For ID maps, non-integer keys are skipped with a warning.
      */
     public static AggregatedData aggregate(List<CommandSyntaxDef> defs) {
@@ -125,22 +121,13 @@ public class CommandSyntaxLoader {
         return agg;
     }
 
-    // -------------------------------------------------------------------------
-
     /**
      * Loads syntax definitions filtered for the given server host.
      *
-     * <ul>
-     *   <li>Defs with no {@code ip} field are always-on (e.g. vanilla).</li>
-     *   <li>Defs with an {@code ip} field are only included when {@code serverHost}
-     *       matches via suffix: {@code mc.hypixel.net} matches {@code hypixel.net},
-     *       but {@code fakehypixel.net} does not.</li>
-     *   <li>If any matched server-specific def has {@code disableVanilla = true},
-     *       all always-on defs are excluded from the result.</li>
-     * </ul>
+     * Defs with no ip field are always-on (e.g. vanilla).
      *
      * @param serverHost Normalized server hostname (port stripped, lowercased),
-     *                   or {@code null} for singleplayer / no active server.
+     * or null for singleplayer / no active server.
      */
     public static List<CommandSyntaxDef> loadForServer(String serverHost) {
         List<CommandSyntaxDef> all = loadAll();
@@ -168,16 +155,13 @@ public class CommandSyntaxLoader {
     }
 
     /**
-     * Returns true if {@code address} equals {@code ip} or is a subdomain of it.
-     * E.g. {@code ipMatches("hypixel.net", "mc.hypixel.net")} → true,
-     *      {@code ipMatches("hypixel.net", "fakehypixel.net")} → false.
+     * Returns true if address equals ip or is a subdomain of it.
      */
     public static boolean ipMatches(String ip, String address) {
         if (ip == null || address == null) return false;
         return address.equals(ip) || address.endsWith("." + ip);
     }
 
-    /** Strips port from an address and lowercases it. Handles IPv6 brackets. */
     private static String normalizeHost(String address) {
         if (address == null) return null;
         int colon = address.lastIndexOf(':');
@@ -187,6 +171,58 @@ public class CommandSyntaxLoader {
     }
 
     // -------------------------------------------------------------------------
+
+    /**
+     * Loads every syntax JSON in the directory, regardless of whether it has a
+     * commands map.
+     */
+    public static List<CommandSyntaxDef> loadAllDefs() {
+        ensureDefaultsExist();
+        File[] files = SYNTAX_DIR.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) { return name.endsWith(".json"); }
+        });
+        if (files == null) return new ArrayList<CommandSyntaxDef>();
+        Arrays.sort(files);
+
+        List<CommandSyntaxDef> result = new ArrayList<CommandSyntaxDef>();
+        for (File file : files) {
+            CommandSyntaxDef def = loadFile(file);
+            if (def != null) {
+                def.sourceFile = file;
+                result.add(def);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Overwrites only the color key inside the given syntax JSON file,
+     * preserving all other fields.  Returns true on success.
+     */
+    public static boolean saveColor(File file, String colorHex) {
+        if (file == null || !file.exists()) return false;
+        try {
+            JsonObject obj;
+            Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+            try {
+                obj = GSON.fromJson(reader, JsonObject.class);
+            } finally {
+                reader.close();
+            }
+            if (obj == null) return false;
+            obj.addProperty("color", colorHex);
+            Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+            try {
+                GSON.toJson(obj, writer);
+            } finally {
+                writer.close();
+            }
+            return true;
+        } catch (Exception e) {
+            System.err.println("[ModernChat] Failed to save color to '" + file.getName() + "': " + e.getMessage());
+            return false;
+        }
+    }
 
     private static CommandSyntaxDef loadFile(File file) {
         try {
@@ -205,13 +241,15 @@ public class CommandSyntaxLoader {
     private static void ensureDefaultsExist() {
         SYNTAX_DIR.mkdirs();
         // Always overwrite bundled syntaxes so they stay in sync with the mod.
-        // Users who want to customise behaviour should create a separate file
+        // Users who want to customize behavior should create a separate file
         // (e.g. custom.json) in the same directory.
         copyBundledResource(BUNDLED_VANILLA, new File(SYNTAX_DIR, "vanilla.json"));
         copyBundledResource(BUNDLED_HYPIXEL, new File(SYNTAX_DIR, "hypixel.json"));
     }
 
     private static void copyBundledResource(String resourcePath, File dest) {
+        // Only create the file if it doesn't already exist so that user edit.
+        if (dest.exists()) return;
         InputStream in = CommandSyntaxLoader.class.getResourceAsStream(resourcePath);
         if (in == null) {
             System.err.println("[ModernChat] Bundled resource not found: " + resourcePath);

@@ -15,9 +15,6 @@
   "icon": "assets/modernchat/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "com.infloat.modernchat.ExampleMod"
-    ],
     "client": [
       "com.infloat.modernchat.ModernChatClient"
     ]
