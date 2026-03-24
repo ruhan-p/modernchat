@@ -70,6 +70,7 @@ public class CommandSyntaxLoader {
         public final Set<String> itemTokens              = new HashSet<String>();
         public final Map<Integer, String> enchantmentNames = new LinkedHashMap<Integer, String>();
         public final Map<Integer, String> effectNames      = new LinkedHashMap<Integer, String>();
+        public final Map<String, Integer> rankColors       = new LinkedHashMap<String, Integer>();
     }
 
     /**
@@ -104,6 +105,19 @@ public class CommandSyntaxLoader {
                         agg.effectNames.put(Integer.parseInt(e.getKey()), e.getValue());
                     } catch (NumberFormatException ex) {
                         System.err.println("[ModernChat] Skipping non-integer effect key '" + e.getKey() + "' in " + def.name);
+                    }
+                }
+            }
+            if (def.rankColors != null) {
+                for (Map.Entry<String, String> e : def.rankColors.entrySet()) {
+                    try {
+                        String c = e.getValue().trim();
+                        if (c.startsWith("0x") || c.startsWith("0X")) c = c.substring(2);
+                        else if (c.startsWith("#")) c = c.substring(1);
+                        if (c.length() == 6) c = "FF" + c;
+                        agg.rankColors.put(e.getKey(), (int) Long.parseLong(c, 16));
+                    } catch (NumberFormatException ex) {
+                        System.err.println("[ModernChat] Invalid rank color '" + e.getValue() + "' for '" + e.getKey() + "' in " + def.name);
                     }
                 }
             }

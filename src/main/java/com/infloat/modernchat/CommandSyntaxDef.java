@@ -78,6 +78,12 @@ public class CommandSyntaxDef {
     public List<String> itemTokens;
 
     /**
+     * Maps command (e.g. "/fly") to its rank-indicator color (ARGB hex string).
+     * Commands present here will show a colored {@code *} suffix in autocomplete.
+     */
+    public Map<String, String> rankColors;
+
+    /**
      * Enchantment ID-to-name map. Keys are string integers (e.g. "0" → "Protection").
      * JSON object keys must be strings; the loader parses them to int at aggregate time.
      */

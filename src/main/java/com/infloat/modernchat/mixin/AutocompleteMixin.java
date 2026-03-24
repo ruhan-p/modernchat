@@ -56,6 +56,9 @@ public abstract class AutocompleteMixin extends Screen {
     private final List<Integer> suggestionColors = new ArrayList<Integer>();
 
     @Unique
+    private final List<Integer> suggestionRankColors = new ArrayList<Integer>();
+
+    @Unique
     private int selectedIndex = -1;
 
     @Unique
@@ -76,6 +79,10 @@ public abstract class AutocompleteMixin extends Screen {
     /** command -> autocomplete text color (ARGB int) from its syntax group */
     @Unique
     private static final Map<String, Integer> COMMAND_COLORS = new HashMap<String, Integer>();
+
+    /** command -> rank-indicator color (ARGB int); absent means no rank requirement */
+    @Unique
+    private static final Map<String, Integer> RANK_COLORS = new HashMap<String, Integer>();
 
     @Unique
     private static final List<String> COMMAND_NAMES = new ArrayList<String>();
@@ -117,6 +124,7 @@ public abstract class AutocompleteMixin extends Screen {
         ITEM_TOKENS               = Collections.emptySet();
         ENCHANTMENT_NAMES         = Collections.emptyMap();
         EFFECT_NAMES              = Collections.emptyMap();
+        RANK_COLORS.clear();
     }
 
     @Unique
@@ -162,6 +170,7 @@ public abstract class AutocompleteMixin extends Screen {
             ITEM_TOKENS               = agg.itemTokens;
             ENCHANTMENT_NAMES         = agg.enchantmentNames;
             EFFECT_NAMES              = agg.effectNames;
+            RANK_COLORS.putAll(agg.rankColors);
 
             modernchat$lastKnownServer = currentServer;
         }
@@ -355,6 +364,7 @@ public abstract class AutocompleteMixin extends Screen {
             this.suggestionDisplays.add(display);
             this.suggestionCompletions.add(completion);
             this.suggestionColors.add(color);
+            this.suggestionRankColors.add(-1);
         }
     }
 
@@ -366,6 +376,7 @@ public abstract class AutocompleteMixin extends Screen {
         this.suggestionDisplays.clear();
         this.suggestionCompletions.clear();
         this.suggestionColors.clear();
+        this.suggestionRankColors.clear();
         this.scrollOffset = 0;
 
         if (!text.startsWith("/") || text.length() < 2) {
@@ -378,9 +389,11 @@ public abstract class AutocompleteMixin extends Screen {
             for (String cmd : COMMAND_NAMES) {
                 if (cmd.startsWith(prefix) && !cmd.equals(prefix)) {
                     int color = COMMAND_COLORS.containsKey(cmd) ? COMMAND_COLORS.get(cmd) : 0xFFAAAAAA;
+                    int rankColor = RANK_COLORS.containsKey(cmd) ? RANK_COLORS.get(cmd) : -1;
                     this.suggestionDisplays.add(cmd);
                     this.suggestionCompletions.add(cmd);
                     this.suggestionColors.add(color);
+                    this.suggestionRankColors.add(rankColor);
                 }
             }
         } else {
@@ -615,6 +628,9 @@ public abstract class AutocompleteMixin extends Screen {
             int idx = this.scrollOffset + i;
             if (idx < totalCount) {
                 int w = tr.getStringWidth(this.suggestionDisplays.get(idx));
+                if (this.suggestionRankColors.get(idx) != -1) {
+                    w += tr.getStringWidth(" *");
+                }
                 if (w > maxWidth) maxWidth = w;
             }
         }
@@ -655,6 +671,11 @@ public abstract class AutocompleteMixin extends Screen {
                     : this.suggestionColors.get(idx);
 
             tr.drawWithShadow(this.suggestionDisplays.get(idx), boxX + 4, entryY + 2, textColor);
+            int rankColor = this.suggestionRankColors.get(idx);
+            if (rankColor != -1) {
+                int nameWidth = tr.getStringWidth(this.suggestionDisplays.get(idx));
+                tr.drawWithShadow("*", boxX + 4 + nameWidth + 2, entryY + 2, rankColor);
+            }
         }
     }
 

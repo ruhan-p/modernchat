@@ -14,6 +14,7 @@ public class ChatHistoryMixin {
             method = "addMessage(Lnet/minecraft/text/Text;IIZ)V",
             constant = @Constant(intValue = 100),
             require = 0
+            // If you're using AxolotlClient, its settings take priority.
     )
     private int modernchat$changeMaxMessages(int original) {
         return ModernChatConfig.INSTANCE.chatHistory;
