@@ -2,7 +2,7 @@
   "name": "hypixel",
   "color": "0xFFD4A843",
   "ip": "hypixel.net",
-  "disableVanilla": true,
+  "disableSingleplayer": true,
   "playerTokens": ["<player>"],
 
   "rankColors": {

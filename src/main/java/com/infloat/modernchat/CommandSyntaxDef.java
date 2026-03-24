@@ -10,7 +10,7 @@ import java.util.Map;
  * JSON structure:
  *
  * {
- *   "name":  "vanilla",
+ *   "name":  "singleplayer",
  *   "color": "0xFFAAAAAA", (color of autocomplete text)
  *   "commands": {
  *     "/ban": ["<player>", "<player> [reason]"],
@@ -29,7 +29,7 @@ public class CommandSyntaxDef {
     public String name = "unnamed";
 
     public String ip = null;
-    public boolean disableVanilla = false;
+    public boolean disableSingleplayer = false;
     public String color = "0xFFAAAAAA";
     public transient java.io.File sourceFile;
     public Map<String, List<String>> commands;

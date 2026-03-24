@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * Config screen that lets the user customize the autocomplete suggestion color
- * for every server syntax file (vanilla is excluded because it is used as a
+ * for every server syntax file (singleplayer is excluded because it is used as a
  * read-only baseline).
  *
  * The list is fully scrollable so any number of server files is supported.

@@ -12,7 +12,7 @@ import java.util.*;
  * Loads command-syntax definition files from config/modernchat/syntaxes/.
  *
  * On the first call to loadAll() if the directory is empty (or does not
- * yet contain vanilla.json the bundled default is copied from the mod's
+ * yet contain singleplayer.json the bundled default is copied from the mod's
  * classpath resources so users have a starting point they can freely edit.
  *
  * Each json file in that directory is parsed into a CommandSyntaxDef.
@@ -23,7 +23,7 @@ public class CommandSyntaxLoader {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final File SYNTAX_DIR = new File("config/modernchat/syntaxes");
-    private static final String BUNDLED_VANILLA  = "/assets/modernchat/syntaxes/vanilla.json";
+    private static final String BUNDLED_SINGLEPLAYER  = "/assets/modernchat/syntaxes/singleplayer.json";
     private static final String BUNDLED_HYPIXEL  = "/assets/modernchat/syntaxes/hypixel.json";
 
     public static List<CommandSyntaxDef> loadAll() {
@@ -124,7 +124,7 @@ public class CommandSyntaxLoader {
     /**
      * Loads syntax definitions filtered for the given server host.
      *
-     * Defs with no ip field are always-on (e.g. vanilla).
+     * Defs with no ip field are always-on (e.g. singleplayer).
      *
      * @param serverHost Normalized server hostname (port stripped, lowercased),
      * or null for singleplayer / no active server.
@@ -143,13 +143,13 @@ public class CommandSyntaxLoader {
             }
         }
 
-        boolean disableVanilla = false;
+        boolean disableSingleplayer = false;
         for (CommandSyntaxDef def : serverDefs) {
-            if (def.disableVanilla) { disableVanilla = true; break; }
+            if (def.disableSingleplayer) { disableSingleplayer = true; break; }
         }
 
         List<CommandSyntaxDef> result = new ArrayList<CommandSyntaxDef>();
-        if (!disableVanilla) result.addAll(alwaysOn);
+        if (!disableSingleplayer) result.addAll(alwaysOn);
         result.addAll(serverDefs);
         return result;
     }
@@ -243,7 +243,7 @@ public class CommandSyntaxLoader {
         // Always overwrite bundled syntaxes so they stay in sync with the mod.
         // Users who want to customize behavior should create a separate file
         // (e.g. custom.json) in the same directory.
-        copyBundledResource(BUNDLED_VANILLA, new File(SYNTAX_DIR, "vanilla.json"));
+        copyBundledResource(BUNDLED_SINGLEPLAYER, new File(SYNTAX_DIR, "singleplayer.json"));
         copyBundledResource(BUNDLED_HYPIXEL, new File(SYNTAX_DIR, "hypixel.json"));
     }
 
