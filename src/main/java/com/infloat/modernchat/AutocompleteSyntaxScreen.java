@@ -65,7 +65,6 @@ public class AutocompleteSyntaxScreen extends Screen {
     private final List<String> editVars = new ArrayList<String>();
     private int          selVar        = -1;
     private boolean      confirmDel    = false;
-    private boolean      confirmDelSrv = false;
 
     // ---- Widgets ------------------------------------------------------------
     private TextFieldWidget newCmdFld;
@@ -77,7 +76,6 @@ public class AutocompleteSyntaxScreen extends Screen {
     private static final int ID_DEL        = 3;
     private static final int ID_NEW        = 4;
     private static final int ID_ADD        = 5;
-    private static final int ID_DEL_SRV    = 6;
     private static final int ID_ADD_PRESET = 7;
 
     // =========================================================================
@@ -92,7 +90,7 @@ public class AutocompleteSyntaxScreen extends Screen {
         selectedSrv = -1; srvScroll = 0; cmdScroll = 0; varScroll = 0;
         cmdNames.clear();
         editCmd = null; addingNew = false; editVars.clear();
-        selVar = -1; confirmDel = false; confirmDelSrv = false;
+        selVar = -1; confirmDel = false;
 
         entries = CommandSyntaxLoader.loadAllDefs();
 
@@ -142,13 +140,12 @@ public class AutocompleteSyntaxScreen extends Screen {
         this.buttons.add(new ButtonWidget(ID_ADD_PRESET,
                 c1CR - 16, LIST_TOP, 16, 14, "+"));
 
-        // Bottom row: 4 equal buttons
+        // Bottom row: 3 equal buttons
         int bTotal = this.width - 16;
-        int bW     = (bTotal - 12) / 4;
-        this.buttons.add(new ButtonWidget(ID_SAVE,    8,                 ctrlBtnY, bW, 20, "Save Changes"));
-        this.buttons.add(new ButtonWidget(ID_DEL,     8 + (bW + 4),      ctrlBtnY, bW, 20, "Delete Command"));
-        this.buttons.add(new ButtonWidget(ID_NEW,     8 + 2 * (bW + 4),  ctrlBtnY, bW, 20, "New Command"));
-        this.buttons.add(new ButtonWidget(ID_DEL_SRV, 8 + 3 * (bW + 4),  ctrlBtnY, bW, 20, "Delete Syntax"));
+        int bW     = (bTotal - 8) / 3;
+        this.buttons.add(new ButtonWidget(ID_SAVE, 8,               ctrlBtnY, bW, 20, "Save Changes"));
+        this.buttons.add(new ButtonWidget(ID_DEL,  8 + (bW + 4),    ctrlBtnY, bW, 20, "Delete Command"));
+        this.buttons.add(new ButtonWidget(ID_NEW,  8 + 2*(bW + 4),  ctrlBtnY, bW, 20, "New Command"));
 
         this.buttons.add(new ButtonWidget(ID_DONE,
                 this.width / 2 - 75, this.height - 24, 150, 20, "Done"));
@@ -253,18 +250,6 @@ public class AutocompleteSyntaxScreen extends Screen {
         reloadCmdNames(); refreshButtons();
     }
 
-    private void deleteServer() {
-        CommandSyntaxDef def = selectedDef();
-        if (def == null) return;
-        CommandSyntaxLoader.deleteSyntax(def.sourceFile);
-        entries.remove(selectedSrv);
-        selectedSrv = -1; confirmDelSrv = false;
-        cmdNames.clear(); editCmd = null; addingNew = false; editVars.clear();
-        selVar = -1; srvScroll = 0; cmdScroll = 0; varScroll = 0;
-        varFld.setText(""); newCmdFld.setText("");
-        refreshButtons();
-    }
-
     private void refreshButtons() {
         boolean hasEdit = (editCmd != null || addingNew);
         boolean hasSrv  = (selectedSrv >= 0 && selectedSrv < entries.size());
@@ -274,7 +259,6 @@ public class AutocompleteSyntaxScreen extends Screen {
             if (b.id == ID_DEL)        b.active = (editCmd != null);
             if (b.id == ID_NEW)        b.active = hasSrv;
             if (b.id == ID_ADD)        b.active = hasEdit;
-            if (b.id == ID_DEL_SRV)    b.active = hasSrv;
             if (b.id == ID_ADD_PRESET) b.active = true;
         }
         for (Object o : this.buttons) {
@@ -317,8 +301,7 @@ public class AutocompleteSyntaxScreen extends Screen {
         if (addingNew) newCmdFld.render();
 
         super.render(mouseX, mouseY, delta);
-        if (confirmDel)    renderConfirmDel(mouseX, mouseY);
-        if (confirmDelSrv) renderConfirmDelSrv(mouseX, mouseY);
+        if (confirmDel) renderConfirmDel(mouseX, mouseY);
     }
 
     // ---- Column 1: Servers --------------------------------------------------
@@ -493,24 +476,6 @@ public class AutocompleteSyntaxScreen extends Screen {
         this.drawCenteredString(this.textRenderer, "Cancel", kX + btnW / 2, btnY + 3, 0xFFFFFF);
     }
 
-    private void renderConfirmDelSrv(int mx, int my) {
-        CommandSyntaxDef def = selectedDef();
-        String srvName = (def != null && def.name != null) ? cap(def.name) : "?";
-        int bW = 260, bH = 80, bX = (this.width - bW) / 2, bY = (this.height - bH) / 2;
-        this.fill(bX - 1, bY - 1, bX + bW + 1, bY + bH + 1, 0xFF555555);
-        this.fill(bX, bY, bX + bW, bY + bH, 0xFF1A1A1A);
-        this.drawCenteredString(this.textRenderer, "Delete syntax: " + srvName + "?", this.width / 2, bY + 8, 0xFFFFFF);
-        this.drawCenteredString(this.textRenderer, "This will also delete the friend list.", this.width / 2, bY + 22, 0xFFAA00);
-        this.drawCenteredString(this.textRenderer, "This cannot be undone.", this.width / 2, bY + 34, 0xFF5555);
-        int btnY = bY + bH - 20, dX = bX + 16, kX = bX + bW - 66, btnW = 50, btnH = 14;
-        boolean dH = mx >= dX && mx < dX+btnW && my >= btnY && my < btnY+btnH;
-        boolean kH = mx >= kX && mx < kX+btnW && my >= btnY && my < btnY+btnH;
-        this.fill(dX, btnY, dX+btnW, btnY+btnH, dH ? 0xFF882222 : 0xFF441111);
-        this.fill(kX, btnY, kX+btnW, btnY+btnH, kH ? 0xFF228822 : 0xFF114411);
-        this.drawCenteredString(this.textRenderer, "Delete", dX + btnW / 2, btnY + 3, 0xFFFFFF);
-        this.drawCenteredString(this.textRenderer, "Cancel", kX + btnW / 2, btnY + 3, 0xFFFFFF);
-    }
-
     // ---- Scrollbar helper ---------------------------------------------------
 
     private void scrollbar(int sbX, int sbTop, int sbBot, int total, int vis, int off) {
@@ -534,21 +499,12 @@ public class AutocompleteSyntaxScreen extends Screen {
             case ID_DEL:        if (editCmd != null) confirmDel = true; break;
             case ID_NEW:        beginNew(); break;
             case ID_ADD:        commitVariant(); break;
-            case ID_DEL_SRV:    if (selectedSrv >= 0 && selectedSrv < entries.size()) confirmDelSrv = true; break;
             case ID_ADD_PRESET: this.client.setScreen(new AddServerPresetScreen(this)); break;
         }
     }
 
     @Override
     protected void mouseClicked(int mx, int my, int btn) {
-        if (confirmDelSrv) {
-            int bW = 260, bH = 80, bX = (this.width - bW) / 2, bY = (this.height - bH) / 2;
-            int btnY = bY + bH - 20, dX = bX + 16, kX = bX + bW - 66, bw = 50, bh = 14;
-            if (mx >= dX && mx < dX+bw && my >= btnY && my < btnY+bh) deleteServer();
-            else if (mx >= kX && mx < kX+bw && my >= btnY && my < btnY+bh) confirmDelSrv = false;
-            else if (!(mx >= bX && mx <= bX+bW && my >= bY && my <= bY+bH)) confirmDelSrv = false;
-            return;
-        }
         if (confirmDel) {
             int bW = 210, bH = 60, bX = (this.width - bW) / 2, bY = (this.height - bH) / 2;
             int btnY = bY + bH - 20, dX = bX + 16, kX = bX + bW - 66, bw = 50, bh = 14;
@@ -623,7 +579,6 @@ public class AutocompleteSyntaxScreen extends Screen {
     @Override
     protected void keyPressed(char chr, int key) {
         if (key == 1) {
-            if (confirmDelSrv)           { confirmDelSrv = false; return; }
             if (confirmDel)              { confirmDel = false; return; }
             if (varFld.isFocused())      { varFld.setFocused(false); selVar = -1; varFld.setText(""); refreshButtons(); return; }
             if (addingNew && newCmdFld.isFocused()) { newCmdFld.setFocused(false); return; }

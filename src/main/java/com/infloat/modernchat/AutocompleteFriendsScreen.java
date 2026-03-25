@@ -50,16 +50,14 @@ public class AutocompleteFriendsScreen extends Screen {
     private int maxFriendVisible;
 
     private TextFieldWidget addFriendField;
-    private static final int ID_ADD      = 1;
-    private static final int ID_DONE     = 2;
-    private static final int ID_COPY     = 3;
-    private static final int ID_DEL_LIST = 4;
+    private static final int ID_ADD  = 1;
+    private static final int ID_DONE = 2;
+    private static final int ID_COPY = 3;
 
     // 0 = normal, 1 = dropdown open, 2 = confirmation overlay showing
     private int copyState = 0;
     private int pendingCopySourceIndex  = -1;
     private int copyDropdownScrollOffset = 0;
-    private boolean confirmDelList = false;
 
     public AutocompleteFriendsScreen(Screen parent) {
         this.parent = parent;
@@ -74,7 +72,6 @@ public class AutocompleteFriendsScreen extends Screen {
         copyState          = 0;
         pendingCopySourceIndex   = -1;
         copyDropdownScrollOffset = 0;
-        confirmDelList     = false;
 
         entries = CommandSyntaxLoader.loadAllDefs();
 
@@ -93,7 +90,7 @@ public class AutocompleteFriendsScreen extends Screen {
         copyBtnY = listBottom - 26;
         addRowY  = listBottom - 50;
 
-        maxServerVisible = Math.max(1, (copyBtnY - friendsListTop) / ROW_HEIGHT);
+        maxServerVisible = Math.max(1, (listBottom - friendsListTop) / ROW_HEIGHT);
         maxFriendVisible = Math.max(1, (addRowY - friendsListTop) / FRIEND_ROW_H);
 
         int addFieldW = rightContentRight - rightX - 4 - 36;
@@ -108,10 +105,6 @@ public class AutocompleteFriendsScreen extends Screen {
         int copyBtnW = rightContentRight - rightX;
         this.buttons.add(new ButtonWidget(ID_COPY,
                 rightX, copyBtnY, copyBtnW, 20, "Copy from..."));
-
-        int delListBtnW = leftContentRight - leftX;
-        this.buttons.add(new ButtonWidget(ID_DEL_LIST,
-                leftX, copyBtnY, delListBtnW, 20, "Delete Friend List"));
 
         this.buttons.add(new ButtonWidget(ID_DONE,
                 this.width / 2 - 75, this.height - 26, 150, 20, "Done"));
@@ -130,7 +123,7 @@ public class AutocompleteFriendsScreen extends Screen {
         boolean hasSelection = (selectedIndex >= 0 && selectedIndex < entries.size());
         for (Object obj : this.buttons) {
             ButtonWidget btn = (ButtonWidget) obj;
-            if (btn.id == ID_ADD || btn.id == ID_COPY || btn.id == ID_DEL_LIST) {
+            if (btn.id == ID_ADD || btn.id == ID_COPY) {
                 btn.active = hasSelection;
             }
         }
@@ -155,7 +148,6 @@ public class AutocompleteFriendsScreen extends Screen {
         } else if (copyState == 2) {
             renderCopyConfirm(mouseX, mouseY);
         }
-        if (confirmDelList) renderConfirmDelList(mouseX, mouseY);
     }
 
     private void renderServerPanel(int mouseX, int mouseY) {
@@ -200,7 +192,7 @@ public class AutocompleteFriendsScreen extends Screen {
         if (entries.size() > maxServerVisible) {
             int sbX      = leftRight - SCROLLBAR_W;
             int sbTop    = friendsListTop;
-            int sbBottom = copyBtnY - 2;
+            int sbBottom = listBottom;
             int sbHeight = sbBottom - sbTop;
             int thumbH   = Math.max(10, sbHeight * maxServerVisible / entries.size());
             int maxOff   = entries.size() - maxServerVisible;
@@ -361,38 +353,6 @@ public class AutocompleteFriendsScreen extends Screen {
         this.drawCenteredString(this.textRenderer, "Cancel", noX  + btnW / 2, btnY + 3, 0xFFFFFF);
     }
 
-    private void renderConfirmDelList(int mx, int my) {
-        if (selectedIndex < 0 || selectedIndex >= entries.size()) return;
-        CommandSyntaxDef def = entries.get(selectedIndex);
-        String srvName = (def.name != null && !def.name.isEmpty())
-                ? Character.toUpperCase(def.name.charAt(0)) + def.name.substring(1) : "Unknown";
-
-        int boxW = 220, boxH = 64, boxX = (this.width - boxW) / 2, boxY = (this.height - boxH) / 2;
-        this.fill(boxX - 1, boxY - 1, boxX + boxW + 1, boxY + boxH + 1, 0xFF555555);
-        this.fill(boxX, boxY, boxX + boxW, boxY + boxH, 0xFF1A1A1A);
-        this.drawCenteredString(this.textRenderer, "Delete friend list: " + srvName + "?",
-                this.width / 2, boxY + 8, 0xFFFFFF);
-        this.drawCenteredString(this.textRenderer, "This cannot be undone.",
-                this.width / 2, boxY + 22, 0xFF5555);
-
-        int btnY = boxY + boxH - 22, yesX = boxX + 16, noX = boxX + boxW - 66, btnW = 50, btnH = 14;
-        boolean yesH = mx >= yesX && mx < yesX+btnW && my >= btnY && my < btnY+btnH;
-        boolean noH  = mx >= noX  && mx < noX+btnW  && my >= btnY && my < btnY+btnH;
-        this.fill(yesX, btnY, yesX+btnW, btnY+btnH, yesH ? 0xFF882222 : 0xFF441111);
-        this.fill(noX,  btnY, noX+btnW,  btnY+btnH, noH  ? 0xFF228822 : 0xFF114411);
-        this.drawCenteredString(this.textRenderer, "Delete", yesX + btnW / 2, btnY + 3, 0xFFFFFF);
-        this.drawCenteredString(this.textRenderer, "Cancel", noX  + btnW / 2, btnY + 3, 0xFFFFFF);
-    }
-
-    private void doDeleteFriendsList() {
-        if (selectedIndex < 0 || selectedIndex >= entries.size()) return;
-        CommandSyntaxDef def = entries.get(selectedIndex);
-        CommandSyntaxLoader.deleteFriendsList(def.sourceFile);
-        def.friends = null;
-        confirmDelList = false;
-        friendScrollOffset = 0;
-    }
-
     @Override
     protected void buttonClicked(ButtonWidget button) {
         if (button.id == ID_DONE) {
@@ -403,25 +363,11 @@ public class AutocompleteFriendsScreen extends Screen {
             copyState = 1;
             copyDropdownScrollOffset = 0;
             pendingCopySourceIndex   = -1;
-        } else if (button.id == ID_DEL_LIST) {
-            if (selectedIndex >= 0 && selectedIndex < entries.size()) confirmDelList = true;
         }
     }
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int button) {
-        if (confirmDelList) {
-            int boxW = 220, boxH = 64, boxX = (this.width - boxW) / 2, boxY = (this.height - boxH) / 2;
-            int btnY = boxY + boxH - 22, yesX = boxX + 16, noX = boxX + boxW - 66, btnW = 50, btnH = 14;
-            if (mouseX >= yesX && mouseX < yesX+btnW && mouseY >= btnY && mouseY < btnY+btnH) {
-                doDeleteFriendsList();
-            } else if (mouseX >= noX && mouseX < noX+btnW && mouseY >= btnY && mouseY < btnY+btnH) {
-                confirmDelList = false;
-            } else if (!(mouseX >= boxX && mouseX <= boxX+boxW && mouseY >= boxY && mouseY <= boxY+boxH)) {
-                confirmDelList = false;
-            }
-            return;
-        }
         if (copyState == 1) {
             List<Integer> copyable = buildCopyableList();
 
@@ -489,7 +435,7 @@ public class AutocompleteFriendsScreen extends Screen {
         addFriendField.mouseClicked(mouseX, mouseY, button);
 
         if (mouseX >= leftX && mouseX <= leftContentRight
-                && mouseY >= friendsListTop && mouseY < copyBtnY) {
+                && mouseY >= friendsListTop && mouseY < listBottom) {
             int clickedRow = (mouseY - friendsListTop) / ROW_HEIGHT;
             int entryIndex = serverScrollOffset + clickedRow;
             if (entryIndex >= 0 && entryIndex < entries.size()
@@ -573,7 +519,6 @@ public class AutocompleteFriendsScreen extends Screen {
     @Override
     protected void keyPressed(char chr, int keyCode) {
         if (keyCode == 1) { // Escape
-            if (confirmDelList) { confirmDelList = false; return; }
             if (copyState != 0) {
                 copyState = 0;
                 pendingCopySourceIndex = -1;

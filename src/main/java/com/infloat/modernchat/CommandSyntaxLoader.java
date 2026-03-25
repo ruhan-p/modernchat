@@ -30,8 +30,6 @@ public class CommandSyntaxLoader {
     private static final File FRIENDS_DIR = new File("config/modernchat/friends");
     private static final String BUNDLED_SINGLEPLAYER         = "/assets/modernchat/commands/singleplayer.json";
     private static final String BUNDLED_FRIENDS_SINGLEPLAYER = "/assets/modernchat/friends/singleplayer.json";
-    private static final String BUNDLED_HYPIXEL               = "/assets/modernchat/commands/hypixel.json";
-    private static final String BUNDLED_FRIENDS_HYPIXEL       = "/assets/modernchat/friends/hypixel.json";
 
     private static class FriendsDef {
         List<String> friends;
@@ -381,12 +379,9 @@ public class CommandSyntaxLoader {
     private static void ensureDefaultsExist() {
         SYNTAX_DIR.mkdirs();
         FRIENDS_DIR.mkdirs();
-        // On first load, copy bundled defaults only if the files do not yet exist.
-        // Files are never regenerated after the user deletes them.
-        copyBundledResource(BUNDLED_SINGLEPLAYER,         new File(SYNTAX_DIR,   "singleplayer.json"));
-        copyBundledResource(BUNDLED_FRIENDS_SINGLEPLAYER, new File(FRIENDS_DIR,  "singleplayer.json"));
-        copyBundledResource(BUNDLED_HYPIXEL,              new File(SYNTAX_DIR,   "hypixel.json"));
-        copyBundledResource(BUNDLED_FRIENDS_HYPIXEL,      new File(FRIENDS_DIR,  "hypixel.json"));
+        // Copy singleplayer defaults on first load only; never overwrite user changes.
+        copyBundledResource(BUNDLED_SINGLEPLAYER,         new File(SYNTAX_DIR,  "singleplayer.json"));
+        copyBundledResource(BUNDLED_FRIENDS_SINGLEPLAYER, new File(FRIENDS_DIR, "singleplayer.json"));
     }
 
     /**
