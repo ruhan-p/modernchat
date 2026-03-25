@@ -460,10 +460,12 @@ To create a profile manually for a server that does not yet have a syntax:
 3. Add your `"commands"` tree using the token syntax above.
 4. Optionally create a matching file at `config/modernchat/friends/myserver.json` with a `"friends"` array.
 5. Launch the game (or save via the in-game menu). The mod reloads syntax files automatically whenever a change is detected.
+___
 
-# Updates
+## Updates
 
 I'll keep rolling out updates for this mod for the foreseeable future, with new features and bug patches as they reveal themselves.
+___
 
-# Usage
+## Usage
 While this is a fairly large mod and I'm not sure where you'd fit it in, feel free to use this mod or any of its code in your own projects.
