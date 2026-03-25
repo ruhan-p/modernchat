@@ -1,0 +1,22 @@
+{
+  "presets": [
+    {
+      "name": "Hypixel",
+      "key": "hypixel",
+      "ip": "hypixel.net",
+      "url": "https://raw.githubusercontent.com/ruhan-p/modernchat/main/presets/hypixel.json"
+    },
+    {
+      "name": "Mineplex",
+      "key": "mineplex",
+      "ip": "us.mineplex.com",
+      "url": "https://raw.githubusercontent.com/ruhan-p/modernchat/main/presets/mineplex.json"
+    },
+    {
+      "name": "CubeCraft",
+      "key": "cubecraft",
+      "ip": "play.cubecraft.net",
+      "url": "https://raw.githubusercontent.com/ruhan-p/modernchat/main/presets/cubecraft.json"
+    }
+  ]
+}

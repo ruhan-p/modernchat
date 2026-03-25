@@ -1,0 +1,18 @@
+{
+  "name": "cubecraft",
+  "color": "0xFF33CCFF",
+  "ip": "play.cubecraft.net",
+  "disableSingleplayer": true,
+  "commands": {
+    "/hub": [""],
+    "/lobby": [""],
+    "/party": ["", "invite <player>", "kick <player>", "leave", "list", "warp"],
+    "/friend": ["", "add <player>", "remove <player>", "list"],
+    "/msg": ["<player> <message>"],
+    "/r": ["<message>"],
+    "/ignore": ["<player>"],
+    "/report": ["<player>"],
+    "/stats": ["", "<player>"],
+    "/join": ["<game>"]
+  }
+}

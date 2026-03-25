@@ -1,0 +1,20 @@
+{
+  "name": "mineplex",
+  "color": "0xFF44AAFF",
+  "ip": "us.mineplex.com",
+  "disableSingleplayer": true,
+  "commands": {
+    "/hub": [""],
+    "/lobby": [""],
+    "/party": ["", "invite <player>", "kick <player>", "leave", "list", "promote <player>", "warp"],
+    "/friend": ["", "add <player>", "remove <player>", "list", "requests"],
+    "/msg": ["<player> <message>"],
+    "/r": ["<message>"],
+    "/ignore": ["<player>"],
+    "/report": ["<player>"],
+    "/stats": ["", "<player>"],
+    "/achievements": [""],
+    "/join": ["<game>"],
+    "/game": [""]
+  }
+}

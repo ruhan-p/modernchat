@@ -58,7 +58,6 @@ public class AutocompleteSyntaxScreen extends Screen {
     private int ctrlCmdY;    // y of "Command:" row
     private int ctrlFldY;    // y of variant input row
     private int ctrlBtnY;    // y of action buttons row
-    private int srvDelBtnY;  // y of the Delete Syntax button at bottom of col 1
 
     // ---- Edit state ---------------------------------------------------------
     private String       editCmd       = null;
@@ -73,12 +72,13 @@ public class AutocompleteSyntaxScreen extends Screen {
     private TextFieldWidget varFld;
 
     // ---- Button IDs ---------------------------------------------------------
-    private static final int ID_DONE    = 1;
-    private static final int ID_SAVE    = 2;
-    private static final int ID_DEL     = 3;
-    private static final int ID_NEW     = 4;
-    private static final int ID_ADD     = 5;
-    private static final int ID_DEL_SRV = 6;
+    private static final int ID_DONE       = 1;
+    private static final int ID_SAVE       = 2;
+    private static final int ID_DEL        = 3;
+    private static final int ID_NEW        = 4;
+    private static final int ID_ADD        = 5;
+    private static final int ID_DEL_SRV    = 6;
+    private static final int ID_ADD_PRESET = 7;
 
     // =========================================================================
     // init
@@ -110,8 +110,7 @@ public class AutocompleteSyntaxScreen extends Screen {
         listBottom = this.height - ctrlH - DONE_AREA_H;
 
         int listTop = LIST_TOP + HEADER_H;
-        srvDelBtnY = listBottom - 22;
-        c1Max = Math.max(1, (srvDelBtnY - listTop) / SRV_ROW_H);
+        c1Max = Math.max(1, (listBottom - listTop) / SRV_ROW_H);
         c2Max = Math.max(1, (listBottom - listTop) / CMD_ROW_H);
         c3Max = Math.max(1, (listBottom - listTop) / VAR_ROW_H);
 
@@ -139,14 +138,17 @@ public class AutocompleteSyntaxScreen extends Screen {
         this.buttons.add(new ButtonWidget(ID_ADD,
                 addBtnX, ctrlFldY - 2, addBtnW, 20, "Add"));
 
-        int bTotal = this.width - 16;
-        int bW     = (bTotal - 8) / 3;
-        this.buttons.add(new ButtonWidget(ID_SAVE, 8,               ctrlBtnY, bW, 20, "Save Changes"));
-        this.buttons.add(new ButtonWidget(ID_DEL,  8 + bW + 4,      ctrlBtnY, bW, 20, "Delete Command"));
-        this.buttons.add(new ButtonWidget(ID_NEW,  8 + 2*(bW + 4),  ctrlBtnY, bW, 20, "New Command"));
+        // "+" preset button — right-aligned in the Servers column header
+        this.buttons.add(new ButtonWidget(ID_ADD_PRESET,
+                c1CR - 16, LIST_TOP, 16, 14, "+"));
 
-        this.buttons.add(new ButtonWidget(ID_DEL_SRV,
-                c1L, srvDelBtnY, c1CR - c1L, 20, "Delete Syntax"));
+        // Bottom row: 4 equal buttons
+        int bTotal = this.width - 16;
+        int bW     = (bTotal - 12) / 4;
+        this.buttons.add(new ButtonWidget(ID_SAVE,    8,                 ctrlBtnY, bW, 20, "Save Changes"));
+        this.buttons.add(new ButtonWidget(ID_DEL,     8 + (bW + 4),      ctrlBtnY, bW, 20, "Delete Command"));
+        this.buttons.add(new ButtonWidget(ID_NEW,     8 + 2 * (bW + 4),  ctrlBtnY, bW, 20, "New Command"));
+        this.buttons.add(new ButtonWidget(ID_DEL_SRV, 8 + 3 * (bW + 4),  ctrlBtnY, bW, 20, "Delete Syntax"));
 
         this.buttons.add(new ButtonWidget(ID_DONE,
                 this.width / 2 - 75, this.height - 24, 150, 20, "Done"));
@@ -268,11 +270,12 @@ public class AutocompleteSyntaxScreen extends Screen {
         boolean hasSrv  = (selectedSrv >= 0 && selectedSrv < entries.size());
         for (Object o : this.buttons) {
             ButtonWidget b = (ButtonWidget) o;
-            if (b.id == ID_SAVE)    b.active = hasEdit;
-            if (b.id == ID_DEL)     b.active = (editCmd != null);
-            if (b.id == ID_NEW)     b.active = hasSrv;
-            if (b.id == ID_ADD)     b.active = hasEdit;
-            if (b.id == ID_DEL_SRV) b.active = hasSrv;
+            if (b.id == ID_SAVE)       b.active = hasEdit;
+            if (b.id == ID_DEL)        b.active = (editCmd != null);
+            if (b.id == ID_NEW)        b.active = hasSrv;
+            if (b.id == ID_ADD)        b.active = hasEdit;
+            if (b.id == ID_DEL_SRV)    b.active = hasSrv;
+            if (b.id == ID_ADD_PRESET) b.active = true;
         }
         for (Object o : this.buttons) {
             ButtonWidget b = (ButtonWidget) o;
@@ -526,12 +529,13 @@ public class AutocompleteSyntaxScreen extends Screen {
     @Override
     protected void buttonClicked(ButtonWidget b) {
         switch (b.id) {
-            case ID_DONE:    this.client.setScreen(parent); break;
-            case ID_SAVE:    save(); break;
-            case ID_DEL:     if (editCmd != null) confirmDel = true; break;
-            case ID_NEW:     beginNew(); break;
-            case ID_ADD:     commitVariant(); break;
-            case ID_DEL_SRV: if (selectedSrv >= 0 && selectedSrv < entries.size()) confirmDelSrv = true; break;
+            case ID_DONE:       this.client.setScreen(parent); break;
+            case ID_SAVE:       save(); break;
+            case ID_DEL:        if (editCmd != null) confirmDel = true; break;
+            case ID_NEW:        beginNew(); break;
+            case ID_ADD:        commitVariant(); break;
+            case ID_DEL_SRV:    if (selectedSrv >= 0 && selectedSrv < entries.size()) confirmDelSrv = true; break;
+            case ID_ADD_PRESET: this.client.setScreen(new AddServerPresetScreen(this)); break;
         }
     }
 
@@ -559,8 +563,8 @@ public class AutocompleteSyntaxScreen extends Screen {
 
         int listTop = LIST_TOP + HEADER_H;
 
-        // Col1 – server selection (stop above the Delete Syntax button)
-        if (mx >= c1L && mx <= c1CR && my >= listTop && my < srvDelBtnY) {
+        // Col1 – server selection
+        if (mx >= c1L && mx <= c1CR && my >= listTop && my < listBottom) {
             int idx = srvScroll + (my - listTop) / SRV_ROW_H;
             if (idx >= 0 && idx < entries.size() && idx != selectedSrv) pickServer(idx);
         }
