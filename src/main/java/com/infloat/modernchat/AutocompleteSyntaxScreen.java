@@ -296,7 +296,7 @@ public class AutocompleteSyntaxScreen extends Screen {
             boolean hov = mx >= c1L && mx <= c1CR && my >= rowY && my < rowY + SRV_ROW_H;
             if (sel) this.fill(c1L, rowY, c1CR, rowY + SRV_ROW_H, 0x882244AA);
             else if (hov) this.fill(c1L, rowY, c1CR, rowY + SRV_ROW_H, 0x33FFFFFF);
-            String name = this.textRenderer.trimToWidth(cap(entries.get(idx).name), c1CR - c1L - 6);
+            String name = this.textRenderer.trimToWidth(entries.get(idx).name, c1CR - c1L - 6);
             this.drawWithShadow(this.textRenderer, name, c1L + 4, rowY + 5, sel ? 0xFFFF55 : 0xFFFFFF);
         }
         if (entries.size() > c1Max)
@@ -307,7 +307,7 @@ public class AutocompleteSyntaxScreen extends Screen {
         String cmdHdr;
         if (selectedSrv >= 0 && selectedSrv < entries.size()) {
             cmdHdr = this.textRenderer.trimToWidth(
-                    "Commands \u2014 " + cap(entries.get(selectedSrv).name), c2CR - c2L);
+                    "Commands \u2014 " + entries.get(selectedSrv).name, c2CR - c2L);
         } else {
             cmdHdr = "Commands";
         }
@@ -553,10 +553,6 @@ public class AutocompleteSyntaxScreen extends Screen {
 
     // util
 
-    private static String cap(String s) {
-        if (s == null || s.isEmpty()) return "Unknown";
-        return Character.toUpperCase(s.charAt(0)) + s.substring(1);
-    }
 
     private static int clamp(int v, int lo, int hi) {
         return v < lo ? lo : (v > hi ? hi : v);

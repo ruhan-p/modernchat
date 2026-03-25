@@ -29,8 +29,7 @@ public class AutocompleteColorScreen extends Screen {
         }
 
         String displayName() {
-            if (def.name == null || def.name.isEmpty()) return "Unknown";
-            return Character.toUpperCase(def.name.charAt(0)) + def.name.substring(1);
+            return (def.name != null && !def.name.isEmpty()) ? def.name : "Unknown";
         }
 
         int colorInt() {

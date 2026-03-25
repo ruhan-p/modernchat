@@ -176,9 +176,7 @@ public class AutocompleteFriendsScreen extends Screen {
                 this.fill(leftX, rowY, leftContentRight, rowY + ROW_HEIGHT - 1, 0x33FFFFFF);
             }
 
-            String name = (def.name != null && !def.name.isEmpty())
-                    ? Character.toUpperCase(def.name.charAt(0)) + def.name.substring(1)
-                    : "Unknown";
+            String name = (def.name != null && !def.name.isEmpty()) ? def.name : "Unknown";
             name = this.textRenderer.trimToWidth(name, leftContentRight - leftX - 6);
             this.drawWithShadow(this.textRenderer, name,
                     leftX + 4, rowY + 3, isSelected ? 0xFFFF55 : 0xFFFFFF);
@@ -210,9 +208,7 @@ public class AutocompleteFriendsScreen extends Screen {
         }
 
         CommandSyntaxDef def = entries.get(selectedIndex);
-        String serverName = (def.name != null && !def.name.isEmpty())
-                ? Character.toUpperCase(def.name.charAt(0)) + def.name.substring(1)
-                : "Unknown";
+        String serverName = (def.name != null && !def.name.isEmpty()) ? def.name : "Unknown";
 
         this.drawWithShadow(this.textRenderer,
                 "Friends \u2014 " + serverName, rightX, LIST_TOP, 0xAAAAAA);
@@ -291,9 +287,7 @@ public class AutocompleteFriendsScreen extends Screen {
                 this.fill(panelX, rowY, panelRight, rowY + FRIEND_ROW_H, 0x44FFFFFF);
             }
 
-            String name = (def.name != null && !def.name.isEmpty())
-                    ? Character.toUpperCase(def.name.charAt(0)) + def.name.substring(1)
-                    : "Unknown";
+            String name = (def.name != null && !def.name.isEmpty()) ? def.name : "Unknown";
             int friendCount = (def.friends != null) ? def.friends.size() : 0;
             String label = name + " (" + friendCount + " friend" + (friendCount == 1 ? "" : "s") + ")";
             label = this.textRenderer.trimToWidth(label, panelRight - panelX - 8);
@@ -316,9 +310,7 @@ public class AutocompleteFriendsScreen extends Screen {
         if (pendingCopySourceIndex < 0 || pendingCopySourceIndex >= entries.size()) return;
 
         CommandSyntaxDef src = entries.get(pendingCopySourceIndex);
-        String srcName = (src.name != null && !src.name.isEmpty())
-                ? Character.toUpperCase(src.name.charAt(0)) + src.name.substring(1)
-                : "Unknown";
+        String srcName = (src.name != null && !src.name.isEmpty()) ? src.name : "Unknown";
 
         int boxW = 180;
         int boxH = 64;
