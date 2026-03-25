@@ -1,8 +1,8 @@
 package com.infloat.modernchat;
 
 /**
- * One entry from the community syntax index hosted on GitHub.
- * Deserialized by Gson from server_syntaxes/index.json.
+ * One entry representing a server syntax file discovered in the
+ * server_syntaxes/ directory on GitHub. Populated by SyntaxFetcher.fetchDirectory().
  */
 public class ServerSyntaxEntry {
     public String name;

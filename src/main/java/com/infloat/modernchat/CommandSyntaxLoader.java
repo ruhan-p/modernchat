@@ -13,7 +13,7 @@ import java.util.*;
  *
  * On the first call to loadAll(), singleplayer.json is copied from the mod's
  * bundled resources if it does not already exist. All other server syntaxes
- * (e.g. hypixel.json) must be installed via the in-game preset browser or
+ * (e.g. hypixel.json) must be installed via the in-game syntax browser or
  * created manually.
  *
  * Each json file in that directory is parsed into a CommandSyntaxDef.

@@ -2,8 +2,8 @@
 
 A total reworking of the 1.8.9 chat, providing tons of features from the modern game and various QoL improvements.
 
-# Version 1.0.0 — First Release!
-Let me know what you all think. If you notice any bugs, please report them on the issues page of the GitHub.
+# Latest Version: v1.1.1
+Cleaned up a few of the features and changed the command syntax file reading system. For more details, see the changelog. Let me know your thoughts! As always, report issues on the GitHub
 
 ## Features
 This mod, in addition to its own changes, compiles features from many different mods into one:
@@ -207,7 +207,7 @@ To open the syntax browser, navigate to the **Command Syntax Configuration** scr
 
 ![img_12.png](images/img_12.png)
 
-This opens the **Add Server** screen, which loads a list of available syntaxes from the GitHub. Select a server from the list and click **Install** to download and save its syntax to your config folder. Installed syntaxes are marked with a green `Installed` label.
+This opens the **Add Server** screen, which scans the `server_syntaxes/` directory on GitHub and lists every available syntax file automatically — no manual index required. Select a server from the list and click **Install** to download and save its syntax to your config folder. Installed syntaxes are marked with a green `Installed` label.
 
 ![img_13.png](images/img_13.png)
 
@@ -225,7 +225,7 @@ The mod stores all of its configurable data in two directories inside your game 
 
 Every `.json` file in the `commands/` folder is loaded automatically, in alphabetical order. A corresponding file with the **same filename** in the `friends/` folder is treated as that server's friend list.
 
-> **Note:** `singleplayer.json` is created the first time you launch the mod if it does not already exist. If you delete the file, it will have to be redownloaded from the GitHub. Server syntaxes such as `hypixel.json` are not installed by default — use the [syntax browser](#installing-server-syntaxes) to install them, or create the files manually as described below.
+> **Note:** `singleplayer.json` is bundled with the mod and is automatically restored the next time you launch if it is deleted. Server syntaxes such as `hypixel.json` are not installed by default — use the [syntax browser](#installing-server-syntaxes) to install them, or create the files manually as described below.
 
 ___
 
@@ -259,7 +259,7 @@ Here is the complete structure with all available fields:
 
 ```json
 {
-  "name": "myserver",
+  "name": "My Server",
   "ip": "play.myserver.net",
   "color": "0xFFAAAAAA",
   "disableSingleplayer": false,
@@ -301,7 +301,7 @@ Here is what each field does:
 
 **`name`** _(string)_
 
-A display label for the server. Used internally and shown in the in-game config menus.
+A display label for the server, shown in all in-game config menus. Should be properly capitalized and formatted (e.g. `"CubeCraft"`, not `"cubecraft"`), as it is displayed verbatim.
 
 ---
 
