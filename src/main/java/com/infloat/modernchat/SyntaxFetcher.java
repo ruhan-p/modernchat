@@ -11,12 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles all network I/O for community preset fetching.
+ * Handles all network I/O for community server syntax fetching.
  * All methods run on background threads; callers must not block the game thread.
  */
 public class SyntaxFetcher {
 
-    public static final String INDEX_URL = "https://raw.githubusercontent.com/ruhan-p/modernchat/main/presets/index.json";
+    public static final String CONTENTS_API_URL = "https://api.github.com/repos/ruhan-p/modernchat/contents/server_syntaxes";
 
     private static final int CONNECT_TIMEOUT_MS = 5000;
     private static final int READ_TIMEOUT_MS    = 10000;
@@ -30,32 +30,48 @@ public class SyntaxFetcher {
         void onResult(T value, String errorOrNull);
     }
 
-    private static class IndexWrapper {
-        List<ServerSyntaxEntry> presets;
+    private static class GitHubFileEntry {
+        String name;
+        String type;
+        String download_url;
     }
 
     /**
-     * Fetches the preset index from GitHub on a background thread.
+     * Scans the server_syntaxes GitHub directory and returns one ServerSyntaxEntry per
+     * .json file found. Name and IP are read from each file's top-level fields.
      * Callback is invoked on the background thread - update volatile screen state, not UI directly.
      */
-    public static void fetchIndex(final Callback<List<ServerSyntaxEntry>> callback) {
+    public static void fetchDirectory(final Callback<List<ServerSyntaxEntry>> callback) {
         new Thread(new Runnable() {
             public void run() {
                 try {
-                    String json = fetchString(INDEX_URL);
-                    IndexWrapper wrapper = GSON.fromJson(json, IndexWrapper.class);
-                    List<ServerSyntaxEntry> list = (wrapper != null && wrapper.presets != null)
-                            ? wrapper.presets : new ArrayList<ServerSyntaxEntry>();
+                    String json = fetchString(CONTENTS_API_URL);
+                    GitHubFileEntry[] files = GSON.fromJson(json, GitHubFileEntry[].class);
+                    List<ServerSyntaxEntry> list = new ArrayList<ServerSyntaxEntry>();
+                    if (files != null) {
+                        for (GitHubFileEntry file : files) {
+                            if (!"file".equals(file.type) || !file.name.endsWith(".json")) continue;
+                            String key = file.name.substring(0, file.name.length() - 5);
+                            String syntaxJson = fetchString(file.download_url);
+                            CommandSyntaxDef def = GSON.fromJson(syntaxJson, CommandSyntaxDef.class);
+                            ServerSyntaxEntry entry = new ServerSyntaxEntry();
+                            entry.key  = key;
+                            entry.name = (def != null && def.name != null) ? def.name : key;
+                            entry.ip   = (def != null) ? def.ip : null;
+                            entry.url  = file.download_url;
+                            list.add(entry);
+                        }
+                    }
                     callback.onResult(list, null);
                 } catch (Exception e) {
                     callback.onResult(null, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
                 }
             }
-        }, "modernchat-preset-fetch").start();
+        }, "modernchat-syntax-fetch").start();
     }
 
     /**
-     * Downloads a single preset JSON and saves it to the commands config directory.
+     * Downloads a single server syntax JSON and saves it to the commands config directory.
      * Sets CommandSyntaxLoader#syntaxDirty on success.
      * Callback is invoked on the background thread.
      */
@@ -67,7 +83,7 @@ public class SyntaxFetcher {
 
                     // Validate before writing
                     CommandSyntaxDef def = GSON.fromJson(json, CommandSyntaxDef.class);
-                    if (def == null) throw new IOException("Invalid preset JSON");
+                    if (def == null) throw new IOException("Invalid server syntax JSON");
 
                     SYNTAX_DIR.mkdirs();
                     File dest = new File(SYNTAX_DIR, entry.key + ".json");
@@ -85,7 +101,7 @@ public class SyntaxFetcher {
                     callback.onResult(null, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
                 }
             }
-        }, "modernchat-preset-download-" + entry.key).start();
+        }, "modernchat-syntax-download-" + entry.key).start();
     }
 
     /** Opens a connection to urlStr, asserts HTTP 200, and returns the response body as UTF-8. */

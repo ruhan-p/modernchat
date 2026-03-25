@@ -68,7 +68,7 @@ public class AddServerSyntaxScreen extends Screen {
 
     private void startFetch() {
         state = STATE_LOADING;
-        SyntaxFetcher.fetchIndex(new SyntaxFetcher.Callback<List<ServerSyntaxEntry>>() {
+        SyntaxFetcher.fetchDirectory(new SyntaxFetcher.Callback<List<ServerSyntaxEntry>>() {
             public void onResult(List<ServerSyntaxEntry> value, String error) {
                 if (error != null) {
                     statusMessage = "Could not load syntaxes: " + error;
