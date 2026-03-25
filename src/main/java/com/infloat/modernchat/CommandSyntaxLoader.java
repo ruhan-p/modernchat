@@ -29,9 +29,9 @@ public class CommandSyntaxLoader {
     private static final File SYNTAX_DIR  = new File("config/modernchat/commands");
     private static final File FRIENDS_DIR = new File("config/modernchat/friends");
     private static final String BUNDLED_SINGLEPLAYER         = "/assets/modernchat/commands/singleplayer.json";
-    private static final String BUNDLED_HYPIXEL              = "/assets/modernchat/commands/hypixel.json";
     private static final String BUNDLED_FRIENDS_SINGLEPLAYER = "/assets/modernchat/friends/singleplayer.json";
-    private static final String BUNDLED_FRIENDS_HYPIXEL      = "/assets/modernchat/friends/hypixel.json";
+    private static final String BUNDLED_HYPIXEL               = "/assets/modernchat/commands/hypixel.json";
+    private static final String BUNDLED_FRIENDS_HYPIXEL       = "/assets/modernchat/friends/hypixel.json";
 
     private static class FriendsDef {
         List<String> friends;
@@ -300,6 +300,50 @@ public class CommandSyntaxLoader {
     }
 
     /**
+     * Overwrites only the commands map inside the given syntax JSON file,
+     * preserving all other fields.  Returns true on success.
+     */
+    public static boolean saveCommands(File file, Map<String, List<String>> commands) {
+        if (file == null || !file.exists()) return false;
+        try {
+            JsonObject obj;
+            Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+            try {
+                obj = GSON.fromJson(reader, JsonObject.class);
+            } finally {
+                reader.close();
+            }
+            if (obj == null) return false;
+
+            com.google.gson.JsonObject cmdsObj = new com.google.gson.JsonObject();
+            if (commands != null) {
+                for (Map.Entry<String, List<String>> e : commands.entrySet()) {
+                    com.google.gson.JsonArray arr = new com.google.gson.JsonArray();
+                    if (e.getValue() != null) {
+                        for (String v : e.getValue()) {
+                            arr.add(new com.google.gson.JsonPrimitive(v));
+                        }
+                    }
+                    cmdsObj.add(e.getKey(), arr);
+                }
+            }
+            obj.add("commands", cmdsObj);
+
+            Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+            try {
+                GSON.toJson(obj, writer);
+            } finally {
+                writer.close();
+            }
+            syntaxDirty = true;
+            return true;
+        } catch (Exception e) {
+            System.err.println("[ModernChat] Failed to save commands to '" + file.getName() + "': " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Loads the friends list for a command file from its corresponding file in
      * config/modernchat/friends/.  Returns null if no friends file exists.
      */
@@ -337,14 +381,38 @@ public class CommandSyntaxLoader {
     private static void ensureDefaultsExist() {
         SYNTAX_DIR.mkdirs();
         FRIENDS_DIR.mkdirs();
-        // Always overwrite bundled syntaxes so they stay in sync with the mod.
-        // Users who want to customize behavior should create a separate file
-        // (e.g. custom.json) in the same directory.
-        copyBundledResource(BUNDLED_SINGLEPLAYER, new File(SYNTAX_DIR, "singleplayer.json"));
-        copyBundledResource(BUNDLED_HYPIXEL, new File(SYNTAX_DIR, "hypixel.json"));
-        // Friends files are user-editable, so only create if absent.
-        copyBundledResource(BUNDLED_FRIENDS_SINGLEPLAYER, new File(FRIENDS_DIR, "singleplayer.json"));
-        copyBundledResource(BUNDLED_FRIENDS_HYPIXEL, new File(FRIENDS_DIR, "hypixel.json"));
+        // On first load, copy bundled defaults only if the files do not yet exist.
+        // Files are never regenerated after the user deletes them.
+        copyBundledResource(BUNDLED_SINGLEPLAYER,         new File(SYNTAX_DIR,   "singleplayer.json"));
+        copyBundledResource(BUNDLED_FRIENDS_SINGLEPLAYER, new File(FRIENDS_DIR,  "singleplayer.json"));
+        copyBundledResource(BUNDLED_HYPIXEL,              new File(SYNTAX_DIR,   "hypixel.json"));
+        copyBundledResource(BUNDLED_FRIENDS_HYPIXEL,      new File(FRIENDS_DIR,  "hypixel.json"));
+    }
+
+    /**
+     * Deletes the given syntax file and its corresponding friends file.
+     * Returns true if the syntax file was successfully deleted.
+     */
+    public static boolean deleteSyntax(File commandFile) {
+        if (commandFile == null) return false;
+        File friendsFile = new File(FRIENDS_DIR, commandFile.getName());
+        if (friendsFile.exists()) friendsFile.delete();
+        boolean deleted = commandFile.delete();
+        if (deleted) syntaxDirty = true;
+        return deleted;
+    }
+
+    /**
+     * Deletes only the friends file corresponding to the given syntax file.
+     * Returns true if the friends file was successfully deleted (or did not exist).
+     */
+    public static boolean deleteFriendsList(File commandFile) {
+        if (commandFile == null) return false;
+        File friendsFile = new File(FRIENDS_DIR, commandFile.getName());
+        if (!friendsFile.exists()) return true;
+        boolean deleted = friendsFile.delete();
+        if (deleted) syntaxDirty = true;
+        return deleted;
     }
 
     private static void copyBundledResource(String resourcePath, File dest) {
