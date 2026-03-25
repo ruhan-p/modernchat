@@ -11,9 +11,10 @@ import java.util.*;
 /**
  * Loads command-syntax definition files from config/modernchat/commands/.
  *
- * On the first call to loadAll() if the directory is empty (or does not
- * yet contain singleplayer.json the bundled default is copied from the mod's
- * classpath resources so users have a starting point they can freely edit.
+ * On the first call to loadAll(), singleplayer.json is copied from the mod's
+ * bundled resources if it does not already exist. All other server syntaxes
+ * (e.g. hypixel.json) must be installed via the in-game preset browser or
+ * created manually.
  *
  * Each json file in that directory is parsed into a CommandSyntaxDef.
  * Files are loaded in alphabetical order so the loading order is deterministic.

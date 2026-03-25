@@ -10,50 +10,42 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Browsable list of community server presets fetched from GitHub.
- * Selecting a preset and clicking Install downloads it and saves it to the
+ * Browsable list of server syntaxes fetched from GitHub.
+ * Selecting a syntax and clicking Install downloads it and saves it to the
  * commands config directory, making it available immediately in the syntax editor.
- * Installed presets can be uninstalled, which also removes their friend list.
+ * Installed syntaxes can be uninstalled, which also removes their friend list.
  */
-public class AddServerPresetScreen extends Screen {
+public class AddServerSyntaxScreen extends Screen {
 
     private final Screen parent;
 
-    // ---- State machine ------------------------------------------------------
     private static final int STATE_LOADING    = 0;
     private static final int STATE_READY      = 1;
     private static final int STATE_INSTALLING = 2;
     private static final int STATE_ERROR      = 3;
 
-    // Written by background threads; read by the game thread each render frame.
     private volatile int                     state         = STATE_LOADING;
-    private volatile List<ServerPresetEntry> presetList    = null;
+    private volatile List<ServerSyntaxEntry> syntaxList    = null;
     private volatile String                  statusMessage = "";
     private volatile boolean                 lastInstallOk = false;
 
-    // ---- Selection & scroll -------------------------------------------------
     private int selectedIndex  = -1;
     private int scrollOffset   = 0;
     private boolean confirmUninstall = false;
 
-    // ---- "Already installed" cache ------------------------------------------
     private Set<String> installedKeys = new HashSet<String>();
 
-    // ---- Layout (computed in init) ------------------------------------------
     private static final int LIST_TOP    = 30;
     private static final int ROW_HEIGHT  = 22;
     private static final int SCROLLBAR_W = 5;
     private int listBottom;
     private int maxVisible;
 
-    // ---- Button IDs ---------------------------------------------------------
     private static final int ID_INSTALL   = 1;
     private static final int ID_DONE      = 2;
     private static final int ID_UNINSTALL = 3;
 
-    // =========================================================================
-
-    public AddServerPresetScreen(Screen parent) {
+    public AddServerSyntaxScreen(Screen parent) {
         this.parent = parent;
     }
 
@@ -62,14 +54,12 @@ public class AddServerPresetScreen extends Screen {
         listBottom = this.height - 48;
         maxVisible = Math.max(1, (listBottom - LIST_TOP) / ROW_HEIGHT);
 
-        // 3 buttons evenly spaced, each 80px wide
         int bStart = this.width / 2 - 122;
         this.buttons.add(new ButtonWidget(ID_INSTALL,   bStart,       this.height - 26, 80, 20, "Install"));
         this.buttons.add(new ButtonWidget(ID_UNINSTALL, bStart + 84,  this.height - 26, 80, 20, "Uninstall"));
         this.buttons.add(new ButtonWidget(ID_DONE,      bStart + 168, this.height - 26, 80, 20, "Done"));
 
-        // Only start the fetch once — re-init on resize must not spawn a second thread.
-        if (state == STATE_LOADING && presetList == null) {
+        if (state == STATE_LOADING && syntaxList == null) {
             startFetch();
         }
 
@@ -78,13 +68,13 @@ public class AddServerPresetScreen extends Screen {
 
     private void startFetch() {
         state = STATE_LOADING;
-        PresetFetcher.fetchIndex(new PresetFetcher.Callback<List<ServerPresetEntry>>() {
-            public void onResult(List<ServerPresetEntry> value, String error) {
+        SyntaxFetcher.fetchIndex(new SyntaxFetcher.Callback<List<ServerSyntaxEntry>>() {
+            public void onResult(List<ServerSyntaxEntry> value, String error) {
                 if (error != null) {
-                    statusMessage = "Could not load presets: " + error;
+                    statusMessage = "Could not load syntaxes: " + error;
                     state = STATE_ERROR;
                 } else {
-                    presetList = value;
+                    syntaxList = value;
                     rebuildInstalledKeys();
                     state = STATE_READY;
                 }
@@ -94,9 +84,9 @@ public class AddServerPresetScreen extends Screen {
 
     private void rebuildInstalledKeys() {
         Set<String> keys = new HashSet<String>();
-        List<ServerPresetEntry> list = presetList;
+        List<ServerSyntaxEntry> list = syntaxList;
         if (list != null) {
-            for (ServerPresetEntry e : list) {
+            for (ServerSyntaxEntry e : list) {
                 if (new File("config/modernchat/commands/" + e.key + ".json").exists()) {
                     keys.add(e.key);
                 }
@@ -105,21 +95,19 @@ public class AddServerPresetScreen extends Screen {
         installedKeys = keys;
     }
 
-    // =========================================================================
-    // Rendering
-    // =========================================================================
+    // render
 
     @Override
     public void render(int mouseX, int mouseY, float delta) {
         this.renderBackground();
-        this.drawCenteredString(this.textRenderer, "Add Server Preset", this.width / 2, 10, 0xFFFFFF);
+        this.drawCenteredString(this.textRenderer, "Add Server Syntax", this.width / 2, 10, 0xFFFFFF);
 
         refreshButtons();
 
         int mid = (listBottom + LIST_TOP) / 2 - 4;
 
         if (state == STATE_LOADING) {
-            this.drawCenteredString(this.textRenderer, "Loading presets...", this.width / 2, mid, 0xAAAAAA);
+            this.drawCenteredString(this.textRenderer, "Loading syntaxes...", this.width / 2, mid, 0xAAAAAA);
 
         } else if (state == STATE_ERROR) {
             this.drawCenteredString(this.textRenderer, statusMessage, this.width / 2, mid, 0xFF5555);
@@ -127,7 +115,6 @@ public class AddServerPresetScreen extends Screen {
         } else {
             renderList(mouseX, mouseY);
 
-            // Status banner above buttons (transient install/uninstall feedback)
             if (!statusMessage.isEmpty() && state != STATE_INSTALLING) {
                 int color = lastInstallOk ? 0x55FF55 : 0xFF5555;
                 this.drawCenteredString(this.textRenderer, statusMessage,
@@ -142,14 +129,13 @@ public class AddServerPresetScreen extends Screen {
 
         super.render(mouseX, mouseY, delta);
 
-        // Confirm overlay rendered last so it appears on top
         if (confirmUninstall) renderConfirmUninstall(mouseX, mouseY);
     }
 
     private void renderList(int mx, int my) {
-        List<ServerPresetEntry> list = presetList;
+        List<ServerSyntaxEntry> list = syntaxList;
         if (list == null || list.isEmpty()) {
-            this.drawCenteredString(this.textRenderer, "No presets available.",
+            this.drawCenteredString(this.textRenderer, "No syntaxes available.",
                     this.width / 2, (listBottom + LIST_TOP) / 2 - 4, 0x666666);
             return;
         }
@@ -160,7 +146,7 @@ public class AddServerPresetScreen extends Screen {
         for (int i = 0; i < vis; i++) {
             int idx  = scrollOffset + i;
             int rowY = LIST_TOP + i * ROW_HEIGHT;
-            ServerPresetEntry e = list.get(idx);
+            ServerSyntaxEntry e = list.get(idx);
             boolean sel       = (idx == selectedIndex);
             boolean installed = installedKeys.contains(e.key);
             boolean hov       = mx >= 4 && mx <= listRight && my >= rowY && my < rowY + ROW_HEIGHT;
@@ -182,8 +168,7 @@ public class AddServerPresetScreen extends Screen {
                         listRight - 64, rowY + 6, 0x55FF55);
             }
         }
-
-        // Scrollbar
+        
         if (list.size() > maxVisible) {
             int sbX = this.width - SCROLLBAR_W - 2;
             int h   = listBottom - LIST_TOP;
@@ -196,14 +181,14 @@ public class AddServerPresetScreen extends Screen {
     }
 
     private void renderConfirmUninstall(int mx, int my) {
-        List<ServerPresetEntry> list = presetList;
+        List<ServerSyntaxEntry> list = syntaxList;
         String name = (list != null && selectedIndex >= 0 && selectedIndex < list.size())
                 ? list.get(selectedIndex).name : "?";
 
         int bW = 260, bH = 80, bX = (this.width - bW) / 2, bY = (this.height - bH) / 2;
         this.fill(bX - 1, bY - 1, bX + bW + 1, bY + bH + 1, 0xFF555555);
         this.fill(bX, bY, bX + bW, bY + bH, 0xFF1A1A1A);
-        this.drawCenteredString(this.textRenderer, "Uninstall preset: " + name + "?",
+        this.drawCenteredString(this.textRenderer, "Uninstall syntax: " + name + "?",
                 this.width / 2, bY + 8, 0xFFFFFF);
         this.drawCenteredString(this.textRenderer, "This will also delete the friend list.",
                 this.width / 2, bY + 22, 0xFFAA00);
@@ -220,7 +205,7 @@ public class AddServerPresetScreen extends Screen {
     }
 
     private void refreshButtons() {
-        List<ServerPresetEntry> list = presetList;
+        List<ServerSyntaxEntry> list = syntaxList;
         boolean hasSelection = selectedIndex >= 0 && list != null && selectedIndex < list.size();
         boolean isInstalled  = hasSelection && installedKeys.contains(list.get(selectedIndex).key);
 
@@ -235,9 +220,7 @@ public class AddServerPresetScreen extends Screen {
         }
     }
 
-    // =========================================================================
-    // Input
-    // =========================================================================
+    // input
 
     @Override
     protected void buttonClicked(ButtonWidget button) {
@@ -245,15 +228,15 @@ public class AddServerPresetScreen extends Screen {
             this.client.setScreen(parent);
 
         } else if (button.id == ID_INSTALL) {
-            List<ServerPresetEntry> list = presetList;
+            List<ServerSyntaxEntry> list = syntaxList;
             if (list == null || selectedIndex < 0 || selectedIndex >= list.size()) return;
-            final ServerPresetEntry entry = list.get(selectedIndex);
+            final ServerSyntaxEntry entry = list.get(selectedIndex);
             if (installedKeys.contains(entry.key)) return;
 
             state = STATE_INSTALLING;
             statusMessage = "";
 
-            PresetFetcher.downloadAndSave(entry, new PresetFetcher.Callback<Void>() {
+            SyntaxFetcher.downloadAndSave(entry, new SyntaxFetcher.Callback<Void>() {
                 public void onResult(Void value, String error) {
                     if (error != null) {
                         statusMessage = "Error: " + error;
@@ -268,7 +251,7 @@ public class AddServerPresetScreen extends Screen {
             });
 
         } else if (button.id == ID_UNINSTALL) {
-            List<ServerPresetEntry> list = presetList;
+            List<ServerSyntaxEntry> list = syntaxList;
             if (list == null || selectedIndex < 0 || selectedIndex >= list.size()) return;
             if (!installedKeys.contains(list.get(selectedIndex).key)) return;
             confirmUninstall = true;
@@ -276,9 +259,9 @@ public class AddServerPresetScreen extends Screen {
     }
 
     private void doUninstall() {
-        List<ServerPresetEntry> list = presetList;
+        List<ServerSyntaxEntry> list = syntaxList;
         if (list == null || selectedIndex < 0 || selectedIndex >= list.size()) return;
-        ServerPresetEntry entry = list.get(selectedIndex);
+        ServerSyntaxEntry entry = list.get(selectedIndex);
         CommandSyntaxLoader.deleteSyntax(new File("config/modernchat/commands/" + entry.key + ".json"));
         rebuildInstalledKeys();
         statusMessage = entry.name + " uninstalled.";
@@ -301,7 +284,7 @@ public class AddServerPresetScreen extends Screen {
             return;
         }
 
-        List<ServerPresetEntry> list = presetList;
+        List<ServerSyntaxEntry> list = syntaxList;
         if (state == STATE_READY && list != null) {
             int listRight = this.width - SCROLLBAR_W - 4;
             if (mx >= 4 && mx <= listRight && my >= LIST_TOP && my < listBottom) {
@@ -323,7 +306,7 @@ public class AddServerPresetScreen extends Screen {
     @Override
     public void handleMouse() {
         super.handleMouse();
-        List<ServerPresetEntry> list = presetList;
+        List<ServerSyntaxEntry> list = syntaxList;
         if (list == null || list.size() <= maxVisible) return;
         int wheel = Mouse.getEventDWheel();
         if (wheel > 0) scrollOffset = Math.max(0, scrollOffset - 1);

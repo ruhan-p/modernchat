@@ -15,7 +15,6 @@ public class ModernChatConfigScreen extends Screen {
 	private static final int BUTTON_WIDTH = 150;
 	private static final int BUTTON_HEIGHT = 20;
 	private static final int ROW_HEIGHT = 24;
-	// Autocomplete row is split: toggle + customize button side-by-side
 	private static final int AUTOCOMPLETE_TOGGLE_W = 80;
 	private static final int CUSTOMIZE_BTN_W       = 66;
 	private static final int AUTOCOMPLETE_ROW_GAP  = 4;
@@ -38,10 +37,10 @@ public class ModernChatConfigScreen extends Screen {
 
 		int id = 0;
 
-		// Autocomplete – toggle button (narrower) + "Customize..." button side-by-side
+		// Autocomplete
 		options.add(new OptionEntry(id++, "Autocomplete", "Toggle Command Autocomplete",
 				centerX + 5, startY, AUTOCOMPLETE_TOGGLE_W));
-		int autocompleteY = startY; // saved for the Customize button below
+		int autocompleteY = startY;
 
 		// Chat History
 		startY += ROW_HEIGHT;

@@ -26,16 +26,13 @@ public class AutocompleteSyntaxScreen extends Screen {
 
     private final Screen parent;
 
-    // ---- Data ---------------------------------------------------------------
     private List<CommandSyntaxDef> entries     = new ArrayList<CommandSyntaxDef>();
     private int                    selectedSrv = -1;
     private List<String>           cmdNames    = new ArrayList<String>();
 
-    // ---- Scroll -------------------------------------------------------------
     private int srvScroll = 0, cmdScroll = 0, varScroll = 0;
     private int lastMX = 0, lastMY = 0;
 
-    // ---- Layout constants ---------------------------------------------------
     private static final int LIST_TOP    = 30;
     private static final int HEADER_H    = 14;
     private static final int SRV_ROW_H   = 20;
@@ -43,44 +40,36 @@ public class AutocompleteSyntaxScreen extends Screen {
     private static final int VAR_ROW_H   = 16;
     private static final int SCROLLBAR_W = 4;
     private static final int DONE_AREA_H = 28;
-    /** Pixels reserved for the inline label left of the variant input field. */
     private static final int FIELD_LBL_W = 72;
 
-    // ---- Computed column bounds (set in init) --------------------------------
-    private int c1L, c1R, c1CR, c1Max;   // col1 left/right/contentRight/maxVisible
+    private int c1L, c1R, c1CR, c1Max;
     private int c2L, c2R, c2CR, c2Max;
     private int c3L, c3R, c3CR, c3Max;
     private int listBottom;
 
-    // ---- Controls area ------------------------------------------------------
-    private int ctrlH;       // height of the controls strip
-    private int ctrlY;       // top of controls strip
-    private int ctrlCmdY;    // y of "Command:" row
-    private int ctrlFldY;    // y of variant input row
-    private int ctrlBtnY;    // y of action buttons row
+    private int ctrlH;
+    private int ctrlY;
+    private int ctrlCmdY;
+    private int ctrlFldY;
+    private int ctrlBtnY;
 
-    // ---- Edit state ---------------------------------------------------------
     private String       editCmd       = null;
     private boolean      addingNew     = false;
     private final List<String> editVars = new ArrayList<String>();
     private int          selVar        = -1;
     private boolean      confirmDel    = false;
 
-    // ---- Widgets ------------------------------------------------------------
     private TextFieldWidget newCmdFld;
     private TextFieldWidget varFld;
 
-    // ---- Button IDs ---------------------------------------------------------
     private static final int ID_DONE       = 1;
     private static final int ID_SAVE       = 2;
     private static final int ID_DEL        = 3;
     private static final int ID_NEW        = 4;
     private static final int ID_ADD        = 5;
-    private static final int ID_ADD_PRESET = 7;
+    private static final int ID_ADD_SYNTAX = 7;
 
-    // =========================================================================
     // init
-    // =========================================================================
 
     public AutocompleteSyntaxScreen(Screen parent) { this.parent = parent; }
 
@@ -94,7 +83,6 @@ public class AutocompleteSyntaxScreen extends Screen {
 
         entries = CommandSyntaxLoader.loadAllDefs();
 
-        // ---- Column widths --------------------------------------------------
         int inner = this.width - 8;
         int col1W = Math.max(50,  (int)(inner * 0.18f));
         int col2W = Math.max(68,  (int)(inner * 0.22f));
@@ -103,7 +91,6 @@ public class AutocompleteSyntaxScreen extends Screen {
         c2L = c1R + 4;         c2R = c2L + col2W;     c2CR = c2R - SCROLLBAR_W - 1;
         c3L = c2R + 4;         c3R = this.width - 4;  c3CR = c3R - SCROLLBAR_W - 1;
 
-        // ---- Vertical layout ------------------------------------------------
         ctrlH      = Math.max(68, this.height / 4);
         listBottom = this.height - ctrlH - DONE_AREA_H;
 
@@ -112,13 +99,11 @@ public class AutocompleteSyntaxScreen extends Screen {
         c2Max = Math.max(1, (listBottom - listTop) / CMD_ROW_H);
         c3Max = Math.max(1, (listBottom - listTop) / VAR_ROW_H);
 
-        // ---- Controls row positions -----------------------------------------
         ctrlY    = listBottom + 2;
         ctrlCmdY = ctrlY + Math.max(6, ctrlH / 11);
         ctrlFldY = ctrlCmdY + 18;
         ctrlBtnY = ctrlFldY  + 22;
 
-        // ---- Widgets --------------------------------------------------------
         int addBtnW   = 40;
         int addBtnX   = this.width - 8 - addBtnW;
         int fldLeft   = 8 + FIELD_LBL_W + 2;
@@ -132,15 +117,12 @@ public class AutocompleteSyntaxScreen extends Screen {
                 8 + 68, ctrlCmdY, this.width - 16 - 68, 14);
         newCmdFld.setMaxLength(64);
 
-        // ---- Buttons --------------------------------------------------------
         this.buttons.add(new ButtonWidget(ID_ADD,
                 addBtnX, ctrlFldY - 2, addBtnW, 20, "Add"));
 
-        // "+" preset button — right-aligned in the Servers column header
-        this.buttons.add(new ButtonWidget(ID_ADD_PRESET,
+        this.buttons.add(new ButtonWidget(ID_ADD_SYNTAX,
                 c1CR - 16, LIST_TOP, 16, 14, "+"));
 
-        // Bottom row: 3 equal buttons
         int bTotal = this.width - 16;
         int bW     = (bTotal - 8) / 3;
         this.buttons.add(new ButtonWidget(ID_SAVE, 8,               ctrlBtnY, bW, 20, "Save Changes"));
@@ -153,9 +135,7 @@ public class AutocompleteSyntaxScreen extends Screen {
         refreshButtons();
     }
 
-    // =========================================================================
-    // State helpers
-    // =========================================================================
+    // state helpers
 
     private CommandSyntaxDef selectedDef() {
         return (selectedSrv >= 0 && selectedSrv < entries.size()) ? entries.get(selectedSrv) : null;
@@ -259,7 +239,7 @@ public class AutocompleteSyntaxScreen extends Screen {
             if (b.id == ID_DEL)        b.active = (editCmd != null);
             if (b.id == ID_NEW)        b.active = hasSrv;
             if (b.id == ID_ADD)        b.active = hasEdit;
-            if (b.id == ID_ADD_PRESET) b.active = true;
+            if (b.id == ID_ADD_SYNTAX) b.active = true;
         }
         for (Object o : this.buttons) {
             ButtonWidget b = (ButtonWidget) o;
@@ -269,9 +249,7 @@ public class AutocompleteSyntaxScreen extends Screen {
         newCmdFld.setEditable(addingNew);
     }
 
-    // =========================================================================
-    // Rendering
-    // =========================================================================
+    // render
 
     @Override
     public void tick() {
@@ -289,7 +267,6 @@ public class AutocompleteSyntaxScreen extends Screen {
         renderCommands(mouseX, mouseY);
         renderVariants(mouseX, mouseY);
 
-        // Column dividers
         this.fill(c1R + 1, LIST_TOP - 2, c1R + 3, listBottom, 0x55FFFFFF);
         this.fill(c2R + 1, LIST_TOP - 2, c2R + 3, listBottom, 0x55FFFFFF);
         // Horizontal divider above controls
@@ -303,8 +280,6 @@ public class AutocompleteSyntaxScreen extends Screen {
         super.render(mouseX, mouseY, delta);
         if (confirmDel) renderConfirmDel(mouseX, mouseY);
     }
-
-    // ---- Column 1: Servers --------------------------------------------------
 
     private void renderServers(int mx, int my) {
         this.drawWithShadow(this.textRenderer, "Servers", c1L, LIST_TOP, 0xAAAAAA);
@@ -327,8 +302,6 @@ public class AutocompleteSyntaxScreen extends Screen {
         if (entries.size() > c1Max)
             scrollbar(c1R - SCROLLBAR_W, top, listBottom, entries.size(), c1Max, srvScroll);
     }
-
-    // ---- Column 2: Commands -------------------------------------------------
 
     private void renderCommands(int mx, int my) {
         String cmdHdr;
@@ -376,8 +349,6 @@ public class AutocompleteSyntaxScreen extends Screen {
             scrollbar(c2R - SCROLLBAR_W, top, listBottom, cmdNames.size(), c2Max, cmdScroll);
     }
 
-    // ---- Column 3: Variants -------------------------------------------------
-
     private void renderVariants(int mx, int my) {
         boolean hasCmd = (editCmd != null || addingNew);
 
@@ -409,10 +380,8 @@ public class AutocompleteSyntaxScreen extends Screen {
             if (sel) this.fill(c3L, rowY, c3CR - 22, rowY + VAR_ROW_H, 0x882244AA);
             else if (hov) this.fill(c3L, rowY, c3CR - 22, rowY + VAR_ROW_H, 0x22FFFFFF);
 
-            // Index
             this.drawWithShadow(this.textRenderer, (vi + 1) + ".", c3L + 2, rowY + 3, 0x666666);
 
-            // Text
             String removeStr = "[-]";
             int removeX = c3CR - this.textRenderer.getStringWidth(removeStr) - 2;
             int maxW    = removeX - (c3L + 16) - 4;
@@ -428,8 +397,6 @@ public class AutocompleteSyntaxScreen extends Screen {
             scrollbar(c3R - SCROLLBAR_W, top, listBottom, editVars.size(), c3Max, varScroll);
     }
 
-    // ---- Controls strip -----------------------------------------------------
-
     private void renderControls(int mx, int my) {
         this.fill(4, ctrlY, this.width - 4, ctrlY + ctrlH, 0x22FFFFFF);
 
@@ -442,7 +409,6 @@ public class AutocompleteSyntaxScreen extends Screen {
             return;
         }
 
-        // Command row
         this.drawWithShadow(this.textRenderer, "Command:", 8, ctrlCmdY + 2, 0xAAAAAA);
         if (!addingNew) {
             String helpTxt = "Syntax: \u00a7f<\u00a77required\u00a7f>  \u00a77[\u00a7foptional\u00a77]";
@@ -453,12 +419,9 @@ public class AutocompleteSyntaxScreen extends Screen {
             this.drawWithShadow(this.textRenderer, helpTxt, this.width - 8 - helpW, ctrlCmdY + 2, 0xAAAAAA);
         }
 
-        // Variant field row label (the field widget itself is rendered by the caller)
         String lbl = (selVar >= 0) ? "Variant " + (selVar + 1) + ":" : "New variant:";
         this.drawWithShadow(this.textRenderer, lbl, 8, ctrlFldY + 2, 0x888888);
     }
-
-    // ---- Confirm-delete overlay ---------------------------------------------
 
     private void renderConfirmDel(int mx, int my) {
         int bW = 210, bH = 60, bX = (this.width - bW) / 2, bY = (this.height - bH) / 2;
@@ -476,8 +439,6 @@ public class AutocompleteSyntaxScreen extends Screen {
         this.drawCenteredString(this.textRenderer, "Cancel", kX + btnW / 2, btnY + 3, 0xFFFFFF);
     }
 
-    // ---- Scrollbar helper ---------------------------------------------------
-
     private void scrollbar(int sbX, int sbTop, int sbBot, int total, int vis, int off) {
         int h = sbBot - sbTop;
         int th = Math.max(8, h * vis / total);
@@ -487,9 +448,7 @@ public class AutocompleteSyntaxScreen extends Screen {
         this.fill(sbX, ty,    sbX + SCROLLBAR_W, ty + th, 0xFFAAAAAA);
     }
 
-    // =========================================================================
-    // Input
-    // =========================================================================
+    // input
 
     @Override
     protected void buttonClicked(ButtonWidget b) {
@@ -499,7 +458,7 @@ public class AutocompleteSyntaxScreen extends Screen {
             case ID_DEL:        if (editCmd != null) confirmDel = true; break;
             case ID_NEW:        beginNew(); break;
             case ID_ADD:        commitVariant(); break;
-            case ID_ADD_PRESET: this.client.setScreen(new AddServerPresetScreen(this)); break;
+            case ID_ADD_SYNTAX: this.client.setScreen(new AddServerSyntaxScreen(this)); break;
         }
     }
 
@@ -519,19 +478,16 @@ public class AutocompleteSyntaxScreen extends Screen {
 
         int listTop = LIST_TOP + HEADER_H;
 
-        // Col1 – server selection
         if (mx >= c1L && mx <= c1CR && my >= listTop && my < listBottom) {
             int idx = srvScroll + (my - listTop) / SRV_ROW_H;
             if (idx >= 0 && idx < entries.size() && idx != selectedSrv) pickServer(idx);
         }
 
-        // Col2 – command selection
         if (selectedSrv >= 0 && mx >= c2L && mx <= c2CR && my >= listTop && my < listBottom) {
             int idx = cmdScroll + (my - listTop) / CMD_ROW_H;
             if (idx >= 0 && idx < cmdNames.size()) pickCmd(cmdNames.get(idx));
         }
 
-        // Col3 – variant interaction
         boolean hasEdit = (editCmd != null || addingNew);
         if (hasEdit && mx >= c3L && mx <= c3CR && my >= listTop && my < listBottom) {
             int vis = Math.min(c3Max, editVars.size() - varScroll);
@@ -595,9 +551,7 @@ public class AutocompleteSyntaxScreen extends Screen {
         super.keyPressed(chr, key);
     }
 
-    // =========================================================================
-    // Utility
-    // =========================================================================
+    // util
 
     private static String cap(String s) {
         if (s == null || s.isEmpty()) return "Unknown";

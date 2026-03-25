@@ -2,10 +2,8 @@ package com.infloat.modernchat;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +14,7 @@ import java.util.List;
  * Handles all network I/O for community preset fetching.
  * All methods run on background threads; callers must not block the game thread.
  */
-public class    PresetFetcher {
+public class SyntaxFetcher {
 
     public static final String INDEX_URL = "https://raw.githubusercontent.com/ruhan-p/modernchat/main/presets/index.json";
 
@@ -33,21 +31,21 @@ public class    PresetFetcher {
     }
 
     private static class IndexWrapper {
-        List<ServerPresetEntry> presets;
+        List<ServerSyntaxEntry> presets;
     }
 
     /**
      * Fetches the preset index from GitHub on a background thread.
-     * Callback is invoked on the background thread — update volatile screen state, not UI directly.
+     * Callback is invoked on the background thread - update volatile screen state, not UI directly.
      */
-    public static void fetchIndex(final Callback<List<ServerPresetEntry>> callback) {
+    public static void fetchIndex(final Callback<List<ServerSyntaxEntry>> callback) {
         new Thread(new Runnable() {
             public void run() {
                 try {
                     String json = fetchString(INDEX_URL);
                     IndexWrapper wrapper = GSON.fromJson(json, IndexWrapper.class);
-                    List<ServerPresetEntry> list = (wrapper != null && wrapper.presets != null)
-                            ? wrapper.presets : new ArrayList<ServerPresetEntry>();
+                    List<ServerSyntaxEntry> list = (wrapper != null && wrapper.presets != null)
+                            ? wrapper.presets : new ArrayList<ServerSyntaxEntry>();
                     callback.onResult(list, null);
                 } catch (Exception e) {
                     callback.onResult(null, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
@@ -58,10 +56,10 @@ public class    PresetFetcher {
 
     /**
      * Downloads a single preset JSON and saves it to the commands config directory.
-     * Sets {@link CommandSyntaxLoader#syntaxDirty} on success.
+     * Sets CommandSyntaxLoader#syntaxDirty on success.
      * Callback is invoked on the background thread.
      */
-    public static void downloadAndSave(final ServerPresetEntry entry, final Callback<Void> callback) {
+    public static void downloadAndSave(final ServerSyntaxEntry entry, final Callback<Void> callback) {
         new Thread(new Runnable() {
             public void run() {
                 try {
@@ -90,7 +88,7 @@ public class    PresetFetcher {
         }, "modernchat-preset-download-" + entry.key).start();
     }
 
-    /** Opens a connection to {@code urlStr}, asserts HTTP 200, and returns the response body as UTF-8. */
+    /** Opens a connection to urlStr, asserts HTTP 200, and returns the response body as UTF-8. */
     private static String fetchString(String urlStr) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
         conn.setConnectTimeout(CONNECT_TIMEOUT_MS);

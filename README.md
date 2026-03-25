@@ -28,6 +28,7 @@ This mod is also highly customizable. To access the config menu, the default key
   - [Suggestion Color Configuration](#suggestion-color-configuration)
   - [Friend List Configuration](#friend-list-configuration)
   - [Command Syntax Configuration](#command-syntax-configuration)
+    - [Installing Server Syntaxes](#installing-server-syntaxes)
 ___
 
 ## Developer Overview
@@ -47,10 +48,7 @@ ___
 ### Server Command Autocomplete
 The autocomplete system for this mod is highly configurable. This allows for various command syntax trees, allowing autocomplete suggestions to work on servers with custom commands.
 
-In addition to singleplayer commands, supported servers include:
-- Hypixel
-
-With more on the way. Note that server command syntaxes can be added manually - these supported servers are just the ones that exist by default.
+In addition to singleplayer commands, the mod supports community-maintained server syntaxes that can be installed in a few clicks directly from the in-game menu. See [Installing Server Syntaxes](#installing-server-syntaxes) for more details.
 
 Supported servers display chat autocomplete suggestions just like singleplayer commands, in their unique color:
 
@@ -193,11 +191,29 @@ Finally, the command autocomplete syntaxes themselves can be modified in full.
 
 On the left, we have our servers list, just like the friends menu. In the middle column, we can select a particular command for the selected server. Finally, on the right side, we can modify a specific variant of that command in the syntax tree.
 
-You can select a variant to edit it, or select none and add a new variant. 
+You can select a variant to edit it, or select none and add a new variant.
 
 You can delete variants by pressing the red `[-]` button next to each variant. You can also delete and add new commands for each server.
 
+The `+` button in the top-left of the Servers column header opens the syntax browser — see [Installing Server Syntaxes](#installing-server-syntaxes) below.
+
 For more details on writing and editing function syntaxes, as well as how the `.json` files work, see [dev details](#developer-details).
+___
+
+#### Installing Server Syntaxes
+The mod ships with only the singleplayer syntax installed by default. Additional servers can be installed through the in-game syntax browser, which fetches syntax definitions directly from GitHub.
+
+To open the syntax browser, navigate to the **Command Syntax Configuration** screen and click the small `+` button next to the **Servers** column header.
+
+![img_12.png](images/img_12.png)
+
+This opens the **Add Server** screen, which loads a list of available syntaxes from the GitHub. Select a server from the list and click **Install** to download and save its syntax to your config folder. Installed syntaxes are marked with a green `Installed` label.
+
+![img_13.png](images/img_13.png)
+
+Syntaxes can also be **uninstalled** from this same screen. Select an installed syntax and click **Uninstall**. You will be asked to confirm, as this also removes the friend list for that server. Uninstalling a syntax also deletes any custom changes made to that syntax.
+
+Once installed, a syntax behaves exactly like any other server syntax. It can be edited, recolored, and have friends added to it through the standard configuration menus.
 ___
 
 ## Developer Details
@@ -209,13 +225,13 @@ The mod stores all of its configurable data in two directories inside your game 
 
 Every `.json` file in the `commands/` folder is loaded automatically, in alphabetical order. A corresponding file with the **same filename** in the `friends/` folder is treated as that server's friend list.
 
-> **Note:** `singleplayer.json` and `hypixel.json` are created the first time you launch the mod if they do not already exist. If you delete them, they will have to be redownloaded from the GitHub.
+> **Note:** `singleplayer.json` is created the first time you launch the mod if it does not already exist. If you delete the file, it will have to be redownloaded from the GitHub. Server syntaxes such as `hypixel.json` are not installed by default — use the [syntax browser](#installing-server-syntaxes) to install them, or create the files manually as described below.
 
 ___
 
 ### Creating Friend List JSONs
 
-Friend list files live in `config/modernchat/friends/`. Each file corresponds to a command syntax file of the same name. For example, the friend list for `commands/hypixel.json` is stored at `friends/hypixel.json`.
+Friend list files live in `config/modernchat/friends/`. Each file corresponds to a command syntax file of the same name. For example, the friend list for `commands/myserver.json` is stored at `friends/myserver.json`.
 
 The structure is minimal:
 
@@ -313,7 +329,7 @@ This can also be changed through the [Suggestion Color Configuration](#suggestio
 
 **`disableSingleplayer`** _(boolean, optional)_
 
-When set to `true`, the singleplayer command profile is suppressed while this server profile is active. This is used by `hypixel.json` to prevent singleplayer commands like `/give` and `/ban` from cluttering Hypixel autocomplete. Defaults to `false`.
+When set to `true`, the singleplayer command profile is suppressed while this server profile is active. This is useful on servers where singleplayer commands like `/give` and `/ban` would clutter the autocomplete. Defaults to `false`.
 
 ---
 
@@ -435,7 +451,9 @@ Maps a command name to an ARGB color. Commands with a rank color display a color
 
 ### Adding a New Server Profile
 
-To add autocomplete support for a new server:
+For servers that already have a community syntax available, the easiest approach is to use the [syntax browser](#installing-server-syntaxes) in-game — this downloads and installs the syntax in one click.
+
+To create a profile manually for a server that does not yet have a syntax:
 
 1. Create a new file in `config/modernchat/commands/`, e.g. `myserver.json`.
 2. Set `"ip"` to the server's hostname (without port), e.g. `"play.myserver.net"`.
