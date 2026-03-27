@@ -4,99 +4,265 @@
   "ip": "hypixel.net",
   "disableSingleplayer": true,
   "rankColors": {
-    "/fly":        "0xFF55FF55",
-    "/zoo":        "0xFF55FF55",
-    "/stats":      "0xFF55FFFF",
-    "/rankcolor":  "0xFF55FFFF",
+    "/fly": "0xFF55FF55",
+    "/zoo": "0xFF55FF55",
+    "/stats": "0xFF55FFFF",
+    "/rankcolor": "0xFF55FFFF",
     "/rankcolour": "0xFF55FFFF",
-    "/nick":       "0xFFFFAA00",
-    "/stream":     "0xFFFFAA00",
-    "/emotes":     "0xFFFFAA00",
-    "/whatsmyface":"0xFFFFAA00"
+    "/nick": "0xFFFFAA00",
+    "/stream": "0xFFFFAA00",
+    "/emotes": "0xFFFFAA00",
+    "/whatsmyface": "0xFFFFAA00"
   },
-
   "commands": {
-    "/help": [""],
-    "/forum": [""],
-    "/wow": [""],
+    "/help": [
+      ""
+    ],
+    "/forum": [
+      ""
+    ],
+    "/wow": [
+      ""
+    ],
     "/lobby": [
       "",
-      "pit", "main", "thepit", "mainlobby",
-      "tourney", "tournament",
-      "a", "party", "arcade",
-      "b", "bw", "bed", "bedwars",
-      "sg", "bsg", "blitz", "survivalgames",
-      "bb", "build", "buildbattle",
-      "q", "v", "ab", "pb", "vz", "tkr", "classic",
-      "cc", "cac", "duels", "housing",
-      "mw", "mega", "megawalls",
-      "mm", "murder", "murdermystery",
-      "sb", "ptl", "skyblock", "prototype",
-      "sw", "sky", "skywars",
-      "smash", "supersmash",
-      "smash heroes", "speed uhc",
-      "tnt", "tntgames",
-      "uhc", "speed", "speeduhc",
-      "w", "warlords",
-      "ww", "wool", "woolwars"
+      "pit",
+      "main",
+      "thepit",
+      "mainlobby",
+      "tourney",
+      "tournament",
+      "a",
+      "party",
+      "arcade",
+      "b",
+      "bw",
+      "bed",
+      "bedwars",
+      "sg",
+      "bsg",
+      "blitz",
+      "survivalgames",
+      "bb",
+      "build",
+      "buildbattle",
+      "q",
+      "v",
+      "ab",
+      "pb",
+      "vz",
+      "tkr",
+      "classic",
+      "cc",
+      "cac",
+      "duels",
+      "housing",
+      "mw",
+      "mega",
+      "megawalls",
+      "mm",
+      "murder",
+      "murdermystery",
+      "sb",
+      "ptl",
+      "skyblock",
+      "prototype",
+      "sw",
+      "sky",
+      "skywars",
+      "smash",
+      "supersmash",
+      "smash heroes",
+      "speed uhc",
+      "tnt",
+      "tntgames",
+      "uhc",
+      "speed",
+      "speeduhc",
+      "w",
+      "warlords",
+      "ww",
+      "wool",
+      "woolwars"
     ],
     "/l": [
       "",
-      "pit", "main", "thepit", "mainlobby",
-      "tourney", "tournament",
-      "a", "party", "arcade",
-      "b", "bw", "bed", "bedwars",
-      "sg", "bsg", "blitz", "survivalgames",
-      "bb", "build", "buildbattle",
-      "q", "v", "ab", "pb", "vz", "tkr", "classic",
-      "cc", "cac", "duels", "housing",
-      "mw", "mega", "megawalls",
-      "mm", "murder", "murdermystery",
-      "sb", "ptl", "skyblock", "prototype",
-      "sw", "sky", "skywars",
-      "smash", "supersmash",
-      "smash heroes", "speed uhc",
-      "tnt", "tntgames",
-      "uhc", "speed", "speeduhc",
-      "w", "warlords",
-      "ww", "wool", "woolwars"
+      "pit",
+      "main",
+      "thepit",
+      "mainlobby",
+      "tourney",
+      "tournament",
+      "a",
+      "party",
+      "arcade",
+      "b",
+      "bw",
+      "bed",
+      "bedwars",
+      "sg",
+      "bsg",
+      "blitz",
+      "survivalgames",
+      "bb",
+      "build",
+      "buildbattle",
+      "q",
+      "v",
+      "ab",
+      "pb",
+      "vz",
+      "tkr",
+      "classic",
+      "cc",
+      "cac",
+      "duels",
+      "housing",
+      "mw",
+      "mega",
+      "megawalls",
+      "mm",
+      "murder",
+      "murdermystery",
+      "sb",
+      "ptl",
+      "skyblock",
+      "prototype",
+      "sw",
+      "sky",
+      "skywars",
+      "smash",
+      "supersmash",
+      "smash heroes",
+      "speed uhc",
+      "tnt",
+      "tntgames",
+      "uhc",
+      "speed",
+      "speeduhc",
+      "w",
+      "warlords",
+      "ww",
+      "wool",
+      "woolwars"
     ],
-    "/hub": [""],
-    "/leave": [""],
-    "/main": [""],
-    "/mp": [""],
-    "/limbo": [""],
-    "/profile": ["", "<player>"],
-    "/fly": [""],
-    "/nick": [""],
-    "/stream": [""],
-    "/emotes": [""],
-    "/swaplobby": ["<#>"],
-    "/lang": ["", "<language>"],
-    "/language": ["", "<language>"],
-    "/rej": [""],
-    "/rejoin": [""],
-    "/back": [""],
-    "/myfilter": [""],
-    "/msg": ["<player> <message>"],
-    "/message": ["<player> <message>"],
-    "/whisper": ["<player> <message>"],
-    "/w": ["<player> <message>"],
-    "/tell": ["<player> <message>"],
-    "/r": ["<message>"],
-    "/reply": ["<message>"],
-    "/ch": ["a", "p", "g", "o"],
-    "/chat": ["a", "p", "g", "o"],
-    "/ac": ["<message>"],
-    "/achat": ["<message>"],
-    "/pc": ["<message>"],
-    "/pchat": ["<message>"],
-    "/gc": ["<message>"],
-    "/gchat": ["<message>"],
-    "/oc": ["<message>"],
-    "/ochat": ["<message>"],
-    "/chatreport": ["<player>"],
-    "/wdr": ["<player> <hackType>"],
+    "/hub": [
+      ""
+    ],
+    "/leave": [
+      ""
+    ],
+    "/main": [
+      ""
+    ],
+    "/mp": [
+      ""
+    ],
+    "/limbo": [
+      ""
+    ],
+    "/profile": [
+      "",
+      "<player>"
+    ],
+    "/fly": [
+      ""
+    ],
+    "/nick": [
+      ""
+    ],
+    "/stream": [
+      ""
+    ],
+    "/emotes": [
+      ""
+    ],
+    "/swaplobby": [
+      "<#>"
+    ],
+    "/lang": [
+      "",
+      "<language>"
+    ],
+    "/language": [
+      "",
+      "<language>"
+    ],
+    "/rej": [
+      ""
+    ],
+    "/rejoin": [
+      ""
+    ],
+    "/back": [
+      ""
+    ],
+    "/myfilter": [
+      ""
+    ],
+    "/msg": [
+      "<player> <message>"
+    ],
+    "/message": [
+      "<player> <message>"
+    ],
+    "/whisper": [
+      "<player> <message>"
+    ],
+    "/w": [
+      "<player> <message>"
+    ],
+    "/tell": [
+      "<player> <message>"
+    ],
+    "/r": [
+      "<message>"
+    ],
+    "/reply": [
+      "<message>"
+    ],
+    "/ch": [
+      "a",
+      "p",
+      "g",
+      "o"
+    ],
+    "/chat": [
+      "a",
+      "p",
+      "g",
+      "o"
+    ],
+    "/ac": [
+      "<message>"
+    ],
+    "/achat": [
+      "<message>"
+    ],
+    "/pc": [
+      "<message>"
+    ],
+    "/pchat": [
+      "<message>"
+    ],
+    "/gc": [
+      "<message>"
+    ],
+    "/gchat": [
+      "<message>"
+    ],
+    "/oc": [
+      "<message>"
+    ],
+    "/ochat": [
+      "<message>"
+    ],
+    "/chatreport": [
+      "<player>"
+    ],
+    "/wdr": [
+      "<player> <hackType>"
+    ],
     "/ignore": [
       "add <player>",
       "remove <player>",
@@ -104,68 +270,207 @@
       "list <page>",
       "help"
     ],
-    "/shout": ["<message>"],
-    "/tipall": [""],
-    "/webprofile": ["<player>"],
-    "/trackcombat": [""],
-    "/trackpvp": [""],
-    "/pvpinfo": [""],
-    "/combatinfo": [""],
-    "/particlequality": ["off", "low", "medium", "high", "extreme"],
-    "/quality": ["off", "low", "medium", "high", "extreme"],
-    "/pq": ["off", "low", "medium", "high", "extreme"],
-    "/whereami": [""],
-    "/map": [""],
-    "/wtfmap": [""],
-    "/rs": [""],
-    "/recentservers": [""],
-    "/stuck": [""],
-    "/blood": [""],
-    "/store": [""],
-    "/buy": [""],
-    "/vip": [""],
-    "/mvp": [""],
-    "/tpa": ["<player>", "accept <player>"],
-    "/togglenews": [""],
-    "/togglechat": [""],
-    "/socialoptions": ["<player>"],
-    "/refreshtotem": [""],
-    "/purchasepet": ["<pet>"],
-    "/getoffmyface": [""],
-    "/joinadvertisedgame": ["<server> <world>"],
-    "/snow": [""],
-    "/stats": ["", "<player>"],
-    "/settings": [""],
-    "/privacy": [""],
-    "/booster": [""],
-    "/networkbooster": [""],
-    "/rankcolor": [""],
-    "/rankcolour": [""],
-    "/gift": ["<player>"],
-    "/presente": ["<player>"],
-    "/prezent": ["<player>"],
-    "/regalo": ["<player>"],
-    "/geef": ["<player>"],
-    "/giftbox": ["<player>"],
-    "/rewards": [""],
-    "/replay": [""],
-    "/pastgames": [""],
-    "/gamehistory": [""],
-    "/games": [""],
-    "/mygames": [""],
-    "/achrewards": [""],
-    "/delivery": [""],
-    "/apguideopenachmenu": [""],
-    "/apguideopengeneral": [""],
-    "/openduelpickpage": ["<player>"],
-    "/duel": ["<player>"],
-    "/openpunchmessagemenu": [""],
-    "/openvanitymenu": [""],
-    "/openachievementmenu": ["<achievement>"],
-    "/openresourcepackbook": [""],
-    "/viewclickeffects": [""],
-    "/viewcloaks": [""],
-    "/viewprofile": ["", "<player>"],
+    "/shout": [
+      "<message>"
+    ],
+    "/tipall": [
+      ""
+    ],
+    "/webprofile": [
+      "<player>"
+    ],
+    "/trackcombat": [
+      ""
+    ],
+    "/trackpvp": [
+      ""
+    ],
+    "/pvpinfo": [
+      ""
+    ],
+    "/combatinfo": [
+      ""
+    ],
+    "/particlequality": [
+      "off",
+      "low",
+      "medium",
+      "high",
+      "extreme"
+    ],
+    "/quality": [
+      "off",
+      "low",
+      "medium",
+      "high",
+      "extreme"
+    ],
+    "/pq": [
+      "off",
+      "low",
+      "medium",
+      "high",
+      "extreme"
+    ],
+    "/whereami": [
+      ""
+    ],
+    "/map": [
+      ""
+    ],
+    "/wtfmap": [
+      ""
+    ],
+    "/rs": [
+      ""
+    ],
+    "/recentservers": [
+      ""
+    ],
+    "/stuck": [
+      ""
+    ],
+    "/blood": [
+      ""
+    ],
+    "/store": [
+      ""
+    ],
+    "/buy": [
+      ""
+    ],
+    "/vip": [
+      ""
+    ],
+    "/mvp": [
+      ""
+    ],
+    "/tpa": [
+      "<player>",
+      "accept <player>"
+    ],
+    "/togglenews": [
+      ""
+    ],
+    "/togglechat": [
+      ""
+    ],
+    "/socialoptions": [
+      "<player>"
+    ],
+    "/refreshtotem": [
+      ""
+    ],
+    "/purchasepet": [
+      "<pet>"
+    ],
+    "/getoffmyface": [
+      ""
+    ],
+    "/joinadvertisedgame": [
+      "<server> <world>"
+    ],
+    "/snow": [
+      ""
+    ],
+    "/stats": [
+      "",
+      "<player>"
+    ],
+    "/settings": [
+      ""
+    ],
+    "/privacy": [
+      ""
+    ],
+    "/booster": [
+      ""
+    ],
+    "/networkbooster": [
+      ""
+    ],
+    "/rankcolor": [
+      ""
+    ],
+    "/rankcolour": [
+      ""
+    ],
+    "/gift": [
+      "<player>"
+    ],
+    "/presente": [
+      "<player>"
+    ],
+    "/prezent": [
+      "<player>"
+    ],
+    "/regalo": [
+      "<player>"
+    ],
+    "/geef": [
+      "<player>"
+    ],
+    "/giftbox": [
+      "<player>"
+    ],
+    "/rewards": [
+      ""
+    ],
+    "/replay": [
+      ""
+    ],
+    "/pastgames": [
+      ""
+    ],
+    "/gamehistory": [
+      ""
+    ],
+    "/games": [
+      ""
+    ],
+    "/mygames": [
+      ""
+    ],
+    "/achrewards": [
+      ""
+    ],
+    "/delivery": [
+      ""
+    ],
+    "/apguideopenachmenu": [
+      ""
+    ],
+    "/apguideopengeneral": [
+      ""
+    ],
+    "/openduelpickpage": [
+      "<player>"
+    ],
+    "/duel": [
+      "<player>"
+    ],
+    "/openpunchmessagemenu": [
+      ""
+    ],
+    "/openvanitymenu": [
+      ""
+    ],
+    "/openachievementmenu": [
+      "<achievement>"
+    ],
+    "/openresourcepackbook": [
+      ""
+    ],
+    "/viewclickeffects": [
+      ""
+    ],
+    "/viewcloaks": [
+      ""
+    ],
+    "/viewprofile": [
+      "",
+      "<player>"
+    ],
     "/friend": [
       "<player>",
       "add <player>",
@@ -430,28 +735,821 @@
       "prototype_towerwars_solo",
       "prototype_towerwars_team_of_two"
     ],
-    "/boop": ["<player>"],
-    "/boo": ["<player>"],
-    "/easter": [""],
-    "/fun": [""],
-    "/funcommands": [""],
-    "/fw": [""],
-    "/hello": [""],
-    "/hi": [""],
-    "/iamtryingtobenicebutitshard": ["<text>"],
-    "/mystery": [""],
-    "/opme": [""],
-    "/pokemon": [""],
-    "/presents": [""],
-    "/rawr": [""],
-    "/removearenabrawl": [""],
-    "/thiscommandliterallydoesnothing": [""],
-    "/trickortreat": [""],
-    "/whatdoyoudo": [""],
-    "/whatsmyface": [""],
-    "/zoo": [""],
-    "/cat": [""],
-    "/shrug": [""],
-    "/emojihelp": [""]
+    "/boop": [
+      "<player>"
+    ],
+    "/boo": [
+      "<player>"
+    ],
+    "/easter": [
+      ""
+    ],
+    "/fun": [
+      ""
+    ],
+    "/funcommands": [
+      ""
+    ],
+    "/fw": [
+      ""
+    ],
+    "/hello": [
+      ""
+    ],
+    "/hi": [
+      ""
+    ],
+    "/iamtryingtobenicebutitshard": [
+      "<text>"
+    ],
+    "/mystery": [
+      ""
+    ],
+    "/opme": [
+      ""
+    ],
+    "/pokemon": [
+      ""
+    ],
+    "/presents": [
+      ""
+    ],
+    "/rawr": [
+      ""
+    ],
+    "/removearenabrawl": [
+      ""
+    ],
+    "/thiscommandliterallydoesnothing": [
+      ""
+    ],
+    "/trickortreat": [
+      ""
+    ],
+    "/whatdoyoudo": [
+      ""
+    ],
+    "/whatsmyface": [
+      ""
+    ],
+    "/zoo": [
+      ""
+    ],
+    "/cat": [
+      ""
+    ],
+    "/shrug": [
+      ""
+    ],
+    "/emojihelp": [
+      ""
+    ],
+    "/2fa": [
+      ""
+    ],
+    "/about": [
+      ""
+    ],
+    "/achievements": [
+      ""
+    ],
+    "/adat": [
+      ""
+    ],
+    "/advent": [
+      ""
+    ],
+    "/adventmenu": [
+      ""
+    ],
+    "/afk": [
+      ""
+    ],
+    "/allh": [
+      ""
+    ],
+    "/api": [
+      ""
+    ],
+    "/arany": [
+      ""
+    ],
+    "/arcade": [
+      ""
+    ],
+    "/atlas": [
+      ""
+    ],
+    "/aur": [
+      ""
+    ],
+    "/badname": [
+      ""
+    ],
+    "/ban": [
+      ""
+    ],
+    "/bedwars": [
+      ""
+    ],
+    "/bingo": [
+      ""
+    ],
+    "/bingocard": [
+      ""
+    ],
+    "/block": [
+      ""
+    ],
+    "/boosteradmin": [
+      ""
+    ],
+    "/bug": [
+      ""
+    ],
+    "/bugreport": [
+      ""
+    ],
+    "/build": [
+      ""
+    ],
+    "/cadeau": [
+      ""
+    ],
+    "/cadou": [
+      ""
+    ],
+    "/chatkeywords": [
+      ""
+    ],
+    "/choosemurderer": [
+      ""
+    ],
+    "/citizens": [
+      ""
+    ],
+    "/citizens2": [
+      ""
+    ],
+    "/click": [
+      ""
+    ],
+    "/companion": [
+      ""
+    ],
+    "/configvisualizer": [
+      ""
+    ],
+    "/confirmnotification": [
+      ""
+    ],
+    "/cr": [
+      ""
+    ],
+    "/cracker": [
+      ""
+    ],
+    "/creport": [
+      ""
+    ],
+    "/customgame": [
+      ""
+    ],
+    "/customstatus": [
+      ""
+    ],
+    "/dane": [
+      ""
+    ],
+    "/dati": [
+      ""
+    ],
+    "/dban": [
+      ""
+    ],
+    "/delayedban": [
+      ""
+    ],
+    "/die": [
+      ""
+    ],
+    "/disablepunch": [
+      ""
+    ],
+    "/discord": [
+      ""
+    ],
+    "/displaymurdererclues": [
+      ""
+    ],
+    "/doubloons": [
+      ""
+    ],
+    "/duels": [
+      ""
+    ],
+    "/dumpSigns": [
+      ""
+    ],
+    "/emoji": [
+      ""
+    ],
+    "/emojis": [
+      ""
+    ],
+    "/equipcosmetic": [
+      ""
+    ],
+    "/equipoutfit": [
+      ""
+    ],
+    "/expirepunishment": [
+      ""
+    ],
+    "/find": [
+      ""
+    ],
+    "/fl": [
+      ""
+    ],
+    "/flower": [
+      ""
+    ],
+    "/follow": [
+      ""
+    ],
+    "/fortunebuff": [
+      ""
+    ],
+    "/fourinarow": [
+      ""
+    ],
+    "/gamesettings": [
+      ""
+    ],
+    "/gave": [
+      ""
+    ],
+    "/genericreset": [
+      ""
+    ],
+    "/Geschenk": [
+      ""
+    ],
+    "/gl": [
+      ""
+    ],
+    "/glow": [
+      ""
+    ],
+    "/gm": [
+      ""
+    ],
+    "/gma": [
+      ""
+    ],
+    "/gmc": [
+      ""
+    ],
+    "/gms": [
+      ""
+    ],
+    "/gmsp": [
+      ""
+    ],
+    "/goliath": [
+      ""
+    ],
+    "/goud": [
+      ""
+    ],
+    "/gt": [
+      ""
+    ],
+    "/guild": [
+      ""
+    ],
+    "/guld": [
+      ""
+    ],
+    "/gull": [
+      ""
+    ],
+    "/head": [
+      ""
+    ],
+    "/headstatus": [
+      ""
+    ],
+    "/home": [
+      ""
+    ],
+    "/housing": [
+      ""
+    ],
+    "/housingtestjoin": [
+      ""
+    ],
+    "/htps": [
+      ""
+    ],
+    "/icanhasbukkit": [
+      ""
+    ],
+    "/infinity": [
+      ""
+    ],
+    "/internalrankgift": [
+      ""
+    ],
+    "/internalrankgiftcheck": [
+      ""
+    ],
+    "/invalidateme": [
+      ""
+    ],
+    "/invspy": [
+      ""
+    ],
+    "/itemreport": [
+      ""
+    ],
+    "/joinlobby": [
+      ""
+    ],
+    "/kolikot": [
+      ""
+    ],
+    "/kultaa": [
+      ""
+    ],
+    "/lahja": [
+      ""
+    ],
+    "/leavemealone": [
+      ""
+    ],
+    "/linkaccount": [
+      ""
+    ],
+    "/list": [
+      ""
+    ],
+    "/loadresourcepack": [
+      ""
+    ],
+    "/loadresourcepackimmediately": [
+      ""
+    ],
+    "/locraw": [
+      ""
+    ],
+    "/lynx": [
+      ""
+    ],
+    "/mapfeedback": [
+      ""
+    ],
+    "/mcp": [
+      ""
+    ],
+    "/me": [
+      ""
+    ],
+    "/mmreport": [
+      ""
+    ],
+    "/moedas": [
+      ""
+    ],
+    "/monede": [
+      ""
+    ],
+    "/monety": [
+      ""
+    ],
+    "/msgreport": [
+      ""
+    ],
+    "/multiLobbyDump": [
+      ""
+    ],
+    "/munten": [
+      ""
+    ],
+    "/mute": [
+      ""
+    ],
+    "/my2017": [
+      ""
+    ],
+    "/my2018": [
+      ""
+    ],
+    "/my2019": [
+      ""
+    ],
+    "/my2020": [
+      ""
+    ],
+    "/my2021": [
+      ""
+    ],
+    "/my2022": [
+      ""
+    ],
+    "/my2023": [
+      ""
+    ],
+    "/my2024": [
+      ""
+    ],
+    "/my2025": [
+      ""
+    ],
+    "/mynt": [
+      ""
+    ],
+    "/mynter": [
+      ""
+    ],
+    "/mystatus": [
+      ""
+    ],
+    "/newqueue": [
+      ""
+    ],
+    "/nextquizquestion": [
+      ""
+    ],
+    "/nickTest": [
+      ""
+    ],
+    "/npc": [
+      ""
+    ],
+    "/npc2": [
+      ""
+    ],
+    "/npcdump": [
+      ""
+    ],
+    "/nwbingo": [
+      ""
+    ],
+    "/onlinestatus": [
+      ""
+    ],
+    "/opengamemenu": [
+      ""
+    ],
+    "/openquickbuyshare": [
+      ""
+    ],
+    "/or": [
+      ""
+    ],
+    "/oro": [
+      ""
+    ],
+    "/ouro": [
+      ""
+    ],
+    "/packagerankold": [
+      ""
+    ],
+    "/para": [
+      ""
+    ],
+    "/parkour": [
+      ""
+    ],
+    "/pet": [
+      ""
+    ],
+    "/pl": [
+      ""
+    ],
+    "/plugins": [
+      ""
+    ],
+    "/podaruj": [
+      ""
+    ],
+    "/policies": [
+      ""
+    ],
+    "/pps": [
+      ""
+    ],
+    "/privategame": [
+      ""
+    ],
+    "/privatesettings": [
+      ""
+    ],
+    "/prototype": [
+      ""
+    ],
+    "/proxy": [
+      ""
+    ],
+    "/questMenu": [
+      ""
+    ],
+    "/queue": [
+      ""
+    ],
+    "/rank": [
+      ""
+    ],
+    "/recentgames": [
+      ""
+    ],
+    "/redeem": [
+      ""
+    ],
+    "/reloadSigns": [
+      ""
+    ],
+    "/replays": [
+      ""
+    ],
+    "/reportbug": [
+      ""
+    ],
+    "/reportcontext": [
+      ""
+    ],
+    "/reportdebug": [
+      ""
+    ],
+    "/reportmenu": [
+      ""
+    ],
+    "/reporttext": [
+      ""
+    ],
+    "/reportworld": [
+      ""
+    ],
+    "/resetlocation": [
+      ""
+    ],
+    "/resource": [
+      ""
+    ],
+    "/resourcebook": [
+      ""
+    ],
+    "/resourcehelp": [
+      ""
+    ],
+    "/resourcepackbook": [
+      ""
+    ],
+    "/resourcepackhelp": [
+      ""
+    ],
+    "/rmnpcs": [
+      ""
+    ],
+    "/rockpapershears": [
+      ""
+    ],
+    "/rules": [
+      ""
+    ],
+    "/s": [
+      ""
+    ],
+    "/sbinstanced": [
+      ""
+    ],
+    "/sc": [
+      ""
+    ],
+    "/script": [
+      ""
+    ],
+    "/secretinstance": [
+      ""
+    ],
+    "/send": [
+      ""
+    ],
+    "/server": [
+      ""
+    ],
+    "/serviceversion": [
+      ""
+    ],
+    "/setlang": [
+      ""
+    ],
+    "/setlanguage": [
+      ""
+    ],
+    "/setstatus": [
+      ""
+    ],
+    "/shareqb": [
+      ""
+    ],
+    "/sharequickbuy": [
+      ""
+    ],
+    "/shutup": [
+      ""
+    ],
+    "/silence": [
+      ""
+    ],
+    "/sisyphus": [
+      ""
+    ],
+    "/skyblock": [
+      ""
+    ],
+    "/skyblockrejoin": [
+      ""
+    ],
+    "/skywars": [
+      ""
+    ],
+    "/sledpicker": [
+      ""
+    ],
+    "/sledtype": [
+      ""
+    ],
+    "/smp": [
+      ""
+    ],
+    "/socialinternal": [
+      ""
+    ],
+    "/socialmenuchatreport": [
+      ""
+    ],
+    "/staffchat": [
+      ""
+    ],
+    "/stafflist": [
+      ""
+    ],
+    "/status": [
+      ""
+    ],
+    "/stoggle": [
+      ""
+    ],
+    "/stopabusingme": [
+      ""
+    ],
+    "/surveyinternal": [
+      ""
+    ],
+    "/teleportdebug": [
+      ""
+    ],
+    "/template": [
+      ""
+    ],
+    "/textreport": [
+      ""
+    ],
+    "/tictactoe": [
+      ""
+    ],
+    "/tip": [
+      ""
+    ],
+    "/tipc": [
+      ""
+    ],
+    "/toggledebug": [
+      ""
+    ],
+    "/togglemusic": [
+      ""
+    ],
+    "/token": [
+      ""
+    ],
+    "/tpdoorman": [
+      ""
+    ],
+    "/tpl": [
+      ""
+    ],
+    "/tpto": [
+      ""
+    ],
+    "/tptoserver": [
+      ""
+    ],
+    "/tr": [
+      ""
+    ],
+    "/trait": [
+      ""
+    ],
+    "/traitc": [
+      ""
+    ],
+    "/transactions": [
+      ""
+    ],
+    "/trc": [
+      ""
+    ],
+    "/uhc": [
+      ""
+    ],
+    "/unban": [
+      ""
+    ],
+    "/unblock": [
+      ""
+    ],
+    "/unmute": [
+      ""
+    ],
+    "/unnick": [
+      ""
+    ],
+    "/userinfo": [
+      ""
+    ],
+    "/usersearch": [
+      ""
+    ],
+    "/vanish": [
+      ""
+    ],
+    "/ver": [
+      ""
+    ],
+    "/veri": [
+      ""
+    ],
+    "/version": [
+      ""
+    ],
+    "/versions": [
+      ""
+    ],
+    "/viewgadgets": [
+      ""
+    ],
+    "/viewquickbuy": [
+      ""
+    ],
+    "/viewslumberitems": [
+      ""
+    ],
+    "/voicemails": [
+      ""
+    ],
+    "/votemap": [
+      ""
+    ],
+    "/w1sinternal": [
+      ""
+    ],
+    "/wanttobet": [
+      ""
+    ],
+    "/watchdogreport": [
+      ""
+    ],
+    "/watchlist": [
+      ""
+    ],
+    "/waypoint": [
+      ""
+    ],
+    "/waypoints": [
+      ""
+    ],
+    "/wdreport": [
+      ""
+    ],
+    "/who": [
+      ""
+    ],
+    "/worldreport": [
+      ""
+    ],
+    "/wp": [
+      ""
+    ],
+    "/wreport": [
+      ""
+    ],
+    "/ytgame": [
+      ""
+    ]
   }
 }
